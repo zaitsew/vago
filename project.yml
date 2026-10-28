@@ -1,0 +1,33 @@
+# Vago — the Xcode project, as a spec.
+#
+#   xcodegen generate      # produces Vago.xcodeproj (gitignored)
+#
+# The Mac app and the iPhone app have their own spec files, so the two never edit the same file
+# (docs/ARCHITECTURE.md). Both use the local VagoKit package.
+name: Vago
+
+options:
+  bundleIdPrefix: com.zaitsew
+  deploymentTarget:
+    iOS: "26.0"
+    macOS: "26.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: VWH2FKV78Q  # Fabrique Futur LLC, same team as Knut; a team id is not a secret
+    CODE_SIGN_STYLE: Automatic
+
+packages:
+  VagoKit:
+    path: .
+
+include:
+  - path: mac.yml
+    relativePaths: false
+  - path: ios.yml
+    relativePaths: false

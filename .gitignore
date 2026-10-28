@@ -1,0 +1,19 @@
+.DS_Store
+.build/
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+Vago.xcodeproj/
+.swiftpm/
+scripts/shots/
+.context/
+.claude/launch.json
+*.log
+
+# Agent worktrees the harness places inside the repo; never part of it.
+.claude/settings.local.json
+.claude/worktrees/
+
+# Teyla hook logs: machine-local session records, not history.
+.teyla/

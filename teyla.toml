@@ -1,0 +1,34 @@
+[product]
+name = "vago"
+
+[release]
+apple_bundle_id = "com.zaitsew.vago"
+
+[[check]]
+name = "Mac menu bar counts a distraction"
+how = "scripts/install-mac.sh → menu bar shows 😄 0m → open youtube.com/shorts for 2 minutes → menu bar shows 2m"
+status = "untested"
+
+[[check]]
+name = "iPhone intent check"
+how = "iPhone app → onboarding → pick Instagram as ambiguous → open Instagram → shield asks Work or scroll → Scroll · 5 min → Instagram opens; after 5 minutes of use the shield is back"
+status = "untested"
+
+[productize]
+primary = "ios"
+users = "owner"            # owner | family | testers | public
+target = "owner"
+platforms = ["ios", "macos"]
+identity = "icloud"
+tenancy = "single"
+backend = "none"
+llm = "on-device"          # Apple Foundation Models on the Mac (docs/ARCHITECTURE.md)
+secrets = []
+cost_cap = "none"
+
+[productize.distribution]
+ios = "testflight-internal"   # after Apple grants Family Controls (Distribution); Xcode Debug until then
+macos = "install-mac"         # scripts/install-mac.sh — signed for this Mac
+
+[productize.triggers]
+macos = "2026-10-29: kickoff asked to count time \"across my devices\" with a timer \"in the top\""
