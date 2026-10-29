@@ -1,0 +1,49 @@
+# The Mac app: a menu-bar agent (LSUIElement), not sandboxed, hardened runtime.
+# Included by project.yml; the iPhone app lives in ios.yml, so the two never share a file.
+targets:
+  VagoMac:
+    type: application
+    platform: macOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Mac
+        excludes:
+          - "*.entitlements"
+    dependencies:
+      - package: VagoKit
+        product: VagoKit
+    info:
+      path: Mac/Info.plist
+      properties:
+        CFBundleName: Vago
+        CFBundleDisplayName: Vago
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        LSUIElement: true
+        LSApplicationCategoryType: public.app-category.productivity
+        ITSAppUsesNonExemptEncryption: false
+        NSHumanReadableCopyright: Vago
+        NSAppleEventsUsageDescription: Vago reads the address and title of your front browser tab to tell work from procrastination. Nothing leaves this Mac.
+    settings:
+      base:
+        PRODUCT_NAME: Vago
+        PRODUCT_BUNDLE_IDENTIFIER: com.zaitsew.vago.mac
+        # install-mac.sh switches to Mac/VagoMac-iCloud.entitlements when the MacDev profile exists.
+        CODE_SIGN_ENTITLEMENTS: Mac/VagoMac.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_APP_SANDBOX: NO
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+
+schemes:
+  VagoMac:
+    build:
+      targets:
+        VagoMac: all
+    run:
+      config: Debug
+    archive:
+      config: Release
