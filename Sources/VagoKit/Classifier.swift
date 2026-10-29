@@ -3,7 +3,7 @@ import Foundation
 /// The AI judge for ambiguous observations. The Mac app supplies the FoundationModels
 /// implementation; tests supply a stub.
 public protocol Judge: Sendable {
-    func judge(_ o: Observation, goals: String) async -> Verdict?
+    func judge(_ o: ActivitySample, goals: String) async -> Verdict?
 }
 
 public struct Verdict: Codable, Sendable, Equatable {
@@ -67,7 +67,7 @@ public actor Classifier {
 
     public func update(goals: String) { self.goals = goals }
 
-    public func classify(_ o: Observation) async -> Classification {
+    public func classify(_ o: ActivitySample) async -> Classification {
         let rule = rules.matchingRule(for: o)
         let bucket = rule?.bucket ?? .neutral
         guard bucket == .ambiguous else {
@@ -113,7 +113,7 @@ public actor Classifier {
     }
 
     /// Day, then host (or bundle id), then the title with case and spacing removed.
-    private static func cacheKey(_ o: Observation, day: DayKey) -> String {
+    private static func cacheKey(_ o: ActivitySample, day: DayKey) -> String {
         let place = o.host.map { "host:\($0)" } ?? "app:\(o.bundleID.lowercased())"
         let title = (o.windowTitle ?? "")
             .lowercased()

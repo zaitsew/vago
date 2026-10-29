@@ -43,13 +43,15 @@ public struct Ledger: Codable, Sendable {
         return sum
     }
 
-    /// Keeps the value with the later `updatedAt`. On a tie, the one with more seconds
-    /// wins, so merging in any order gives the same ledger.
+    /// Keeps the value with the later `updatedAt`. On a tie, the larger value wins, compared
+    /// by (procrastination, productive, focus), so merging in any order gives the same ledger.
     public mutating func merge(_ other: DeviceDay) {
         let key = Self.key(other.day, other.device)
         if let existing = days[key] {
             if existing.updatedAt > other.updatedAt { return }
-            if existing.updatedAt == other.updatedAt && existing.totalSeconds >= other.totalSeconds { return }
+            if existing.updatedAt == other.updatedAt
+                && (existing.procrastination, existing.productive, existing.focus)
+                    >= (other.procrastination, other.productive, other.focus) { return }
         }
         days[key] = other
     }
