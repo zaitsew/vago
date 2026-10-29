@@ -31,7 +31,7 @@ public struct Rule: Codable, Sendable, Equatable, Identifiable {
     }
 
     /// True when every field that is set matches. A rule with no field set matches nothing.
-    public func matches(_ o: Observation) -> Bool {
+    public func matches(_ o: ActivitySample) -> Bool {
         let bundle = Self.clean(bundleID), host = Self.clean(host)
         let path = Self.clean(pathPrefix), title = Self.clean(titleContains)
         guard bundle != nil || host != nil || path != nil || title != nil else { return false }
@@ -108,7 +108,7 @@ public struct RuleBook: Codable, Sendable {
 
     /// The rule that decides `o`: the first matching user or review rule; otherwise the most
     /// specific matching built-in (path, then host, then bundle), the earlier one on a tie.
-    public func matchingRule(for o: Observation) -> Rule? {
+    public func matchingRule(for o: ActivitySample) -> Rule? {
         if let custom = rules.first(where: { $0.source != .builtIn && $0.matches(o) }) { return custom }
         var best: Rule?
         for rule in rules where rule.source == .builtIn && rule.matches(o) {
@@ -119,7 +119,7 @@ public struct RuleBook: Codable, Sendable {
 
     /// `.ambiguous` when only an ambiguous rule matches (a browser with no URL, Instagram's
     /// home page); `.neutral` when no rule matches.
-    public func bucket(for o: Observation) -> Bucket {
+    public func bucket(for o: ActivitySample) -> Bucket {
         matchingRule(for: o)?.bucket ?? .neutral
     }
 
@@ -127,7 +127,7 @@ public struct RuleBook: Codable, Sendable {
     /// Web: the host plus the first path component. App: the bundle id, plus the first
     /// meaningful word of the window title when the app is ambiguous (Telegram, WhatsApp).
     /// An earlier `.review` rule with the same conditions is replaced, not duplicated.
-    public mutating func learn(from o: Observation, bucket: Bucket) {
+    public mutating func learn(from o: ActivitySample, bucket: Bucket) {
         var rule = Rule(bucket: bucket, source: .review)
         if let host = o.host {
             rule.host = host
@@ -136,7 +136,7 @@ public struct RuleBook: Codable, Sendable {
             }
         } else {
             rule.bundleID = o.bundleID
-            let bare = Observation(bundleID: o.bundleID, appName: o.appName)
+            let bare = ActivitySample(bundleID: o.bundleID, appName: o.appName)
             if Self.builtIn.bucket(for: bare) == .ambiguous {
                 rule.titleContains = Self.firstMeaningfulWord(of: o.windowTitle, excluding: o.appName)
             }

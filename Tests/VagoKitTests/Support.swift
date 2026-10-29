@@ -18,12 +18,12 @@ func at(_ text: String) -> Date {
     return f.date(from: text)!
 }
 
-func web(_ url: String, title: String? = nil, bundle: String = "com.google.Chrome") -> Observation {
-    Observation(bundleID: bundle, appName: "Browser", windowTitle: title, url: URL(string: url))
+func web(_ url: String, title: String? = nil, bundle: String = "com.google.Chrome") -> ActivitySample {
+    ActivitySample(bundleID: bundle, appName: "Browser", windowTitle: title, url: URL(string: url))
 }
 
-func app(_ bundle: String, name: String = "App", title: String? = nil) -> Observation {
-    Observation(bundleID: bundle, appName: name, windowTitle: title)
+func app(_ bundle: String, name: String = "App", title: String? = nil) -> ActivitySample {
+    ActivitySample(bundleID: bundle, appName: name, windowTitle: title)
 }
 
 let builtIn = RuleBook.builtIn
@@ -40,7 +40,7 @@ actor StubJudge: Judge {
         self.delay = delay
     }
 
-    func judge(_ o: Observation, goals: String) async -> Verdict? {
+    func judge(_ o: ActivitySample, goals: String) async -> Verdict? {
         calls += 1
         lastGoals = goals
         if let delay { try? await Task.sleep(for: delay) }

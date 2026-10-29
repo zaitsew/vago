@@ -36,7 +36,7 @@ public enum Bucket: String, Codable, Sendable, CaseIterable { case productive, n
 public enum Device: String, Codable, Sendable { case iphone, mac }
 
 /// What the Mac (or a shield) observed for one second of use.
-public struct Observation: Sendable, Equatable {
+public struct ActivitySample: Sendable, Equatable {
     public var bundleID: String          // "com.google.Chrome"
     public var appName: String
     public var windowTitle: String?      // front window title, when known
@@ -52,20 +52,20 @@ public struct Rule: Codable, Sendable, Equatable, Identifiable {
     public var titleContains: String?    // case-insensitive
     public var bucket: Bucket
     public var source: Source            // .builtIn, .user, .review
-    public func matches(_ o: Observation) -> Bool
+    public func matches(_ o: ActivitySample) -> Bool
 }
 
 public struct RuleBook: Codable, Sendable {
     public var rules: [Rule]             // user and review rules first, then built-ins
     public static let builtIn: RuleBook  // the defaults listed in docs/PRODUCT.md
-    public func bucket(for o: Observation) -> Bucket   // .ambiguous when only an ambiguous rule matches
-    public mutating func learn(from o: Observation, bucket: Bucket)  // nightly review answer → a .review rule (host+path for web, bundle+title word for apps)
+    public func bucket(for o: ActivitySample) -> Bucket   // .ambiguous when only an ambiguous rule matches
+    public mutating func learn(from o: ActivitySample, bucket: Bucket)  // nightly review answer → a .review rule (host+path for web, bundle+title word for apps)
 }
 
 /// The AI judge for ambiguous observations. The Mac app supplies the FoundationModels
 /// implementation; tests supply a stub.
 public protocol Judge: Sendable {
-    func judge(_ o: Observation, goals: String) async -> Verdict?
+    func judge(_ o: ActivitySample, goals: String) async -> Verdict?
 }
 public struct Verdict: Codable, Sendable, Equatable { public var bucket: Bucket; public var confidence: Double; public var reason: String }
 
@@ -73,7 +73,7 @@ public struct Verdict: Codable, Sendable, Equatable { public var bucket: Bucket;
 /// or no judge, counts as procrastination and is queued for review (`unclear == true`).
 public actor Classifier {
     public init(rules: RuleBook, judge: Judge?, goals: String)
-    public func classify(_ o: Observation) async -> Classification
+    public func classify(_ o: ActivitySample) async -> Classification
 }
 public struct Classification: Sendable, Equatable { public var bucket: Bucket; public var unclear: Bool; public var reason: String }
 
@@ -98,13 +98,16 @@ public struct Session: Codable, Sendable, Identifiable, Equatable {
     public var id: UUID
     public var start: Date
     public var seconds: Int
-    public var observation: ObservationRecord   // Codable twin of Observation
+    public var sample: ActivitySampleRecord   // Codable twin of ActivitySample
     public var guess: Bucket
     public var reason: String
 }
 
 /// All devices' days, merged. The key-value store keeps one JSON value per
 /// `day/<day id>/<device>` key; last `updatedAt` wins per key.
+/// The key-value store's wire format, the same on both apps: JSON, ISO 8601 dates.
+extension DeviceDay { public func encoded() -> Data; public init?(encoded value: Any) }
+
 public struct Ledger: Codable, Sendable {
     public var days: [String: DeviceDay]         // key = "day/<id>/<device>"
     public func total(for day: DayKey) -> (procrastination: Int, productive: Int, focus: Int)
