@@ -206,6 +206,12 @@ The app learns usage only from thresholds the system reports to the monitor exte
 - **Sync**: the app reads and writes `DeviceDay` values in the key-value store and shows the
   merged ledger, so Mac minutes appear on the iPhone and the other way round.
 
+## AI tools
+
+App Intents on the iPhone (`iOS/App/Intents/`) and a read-only stdio MCP server, `vago-mcp`
+(`Sources/vago-mcp`, over VagoKit's `StateFile` and `VagoMCPServer`), on the Mac. See
+[AI.md](AI.md). `Ledger.summary(for:)` and `weekSummary(endingOn:)` are the shared numbers.
+
 ## Privacy
 
 No server, no analytics, no account. The data stays on the devices and in the owner's iCloud
