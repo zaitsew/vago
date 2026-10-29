@@ -27,8 +27,16 @@ Settings > Counting > "Last report" shows when the monitor last heard from Scree
 ## Before TestFlight: Family Controls (Distribution)
 
 The development entitlement is for Xcode builds only. A TestFlight or App Store build needs
-Apple's **Family Controls (Distribution)** entitlement, which Apple grants by hand, **one
-request per bundle id that carries `com.apple.developer.family-controls`**:
+Apple's **Family Controls (Distribution)** entitlement, which Apple grants by hand.
+
+**Status: requested 2026-10-29, request ID `UV8Q3ZRHY8`, waiting for Apple.** The form
+(https://developer.apple.com/contact/request/family-controls-distribution) is one request per
+team, not per bundle id: it was filed for Fabrique Futur LLC (`VWH2FKV78Q`), and Apple replies
+to dev@fafutur.com. Submitting it accepted Apple's Family Controls terms for the team: the app's
+primary purpose is parental controls or personal focus and productivity, and usage data serves
+only those controls (no sharing, advertising or data brokers).
+
+Once Apple approves, these bundle ids carry `com.apple.developer.family-controls`:
 
 | Bundle id | Target |
 |---|---|
@@ -38,14 +46,12 @@ request per bundle id that carries `com.apple.developer.family-controls`**:
 | `com.zaitsew.vago.shieldaction` | VagoShieldAction (ShieldAction) |
 | `com.zaitsew.vago.report` | VagoReport (DeviceActivityReport) |
 
-Request each at https://developer.apple.com/contact/request/family-controls-distribution.
-`com.zaitsew.vago.widgets` carries only the App Group and needs no request. After Apple
-approves a bundle id, enable the capability on its App ID and regenerate the profiles
-(`~/ops/bin/testflight bootstrap --refresh-profiles`). Approval takes days to weeks, so file
-all five on the same day.
-
-Release signing also needs the App Group on all six App IDs and the iCloud key-value store on
-`com.zaitsew.vago`.
+All six App IDs (these five and `com.zaitsew.vago.widgets`) were registered on 2026-10-29
+through the App Store Connect API, with the App Group. The API cannot set Family Controls, and
+it refused iCloud on `com.zaitsew.vago` without a CloudKit setting. Xcode's automatic signing
+adds both for Debug builds. For release, enable Family Controls and iCloud (key-value store) on
+the App IDs in the developer website after approval, then regenerate the profiles
+(`~/ops/bin/testflight bootstrap --refresh-profiles`).
 
 ## Platform limits
 
