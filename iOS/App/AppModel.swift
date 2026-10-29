@@ -135,24 +135,23 @@ final class AppModel {
     // MARK: Focus
 
     func startFocus(minutes: Int) {
-        guard authorized, activeFocus == nil else { return }
-        let session = FocusSession(start: .now, minutes: minutes)
         do {
-            try VagoMonitoring.startFocus(session)
+            try FocusControl.start(minutes: minutes, store: store)
+        } catch FocusControl.Failure.alreadyRunning {
+            return
+        } catch let failure as FocusControl.Failure {
+            errorMessage = failure.message
+            return
         } catch {
             errorMessage = "Could not start focus: \(error.localizedDescription)"
             return
         }
-        store.setSessions(store.sessions() + [session])
-        VagoShields.applyFocus(store)
         Task { await refresh(syncCloud: false) }
     }
 
     /// Gives up: the tree wilts and the shield comes off. Focus time so far still counts.
     func abandonFocus() {
-        store.updateLastSession { $0.abandon(now: .now) }
-        VagoShields.liftFocus()
-        VagoMonitoring.stop(.focus)
+        FocusControl.stop(store: store)
         Task { await refresh() }
     }
 
