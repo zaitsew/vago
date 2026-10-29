@@ -42,12 +42,13 @@ enum SelectionKind: String, CaseIterable, Codable, Sendable, Identifiable {
     }
 }
 
-/// A usage threshold on one of the two counted selections. The event name carries
-/// both parts: "p.12" is 12 minutes on the procrastination selection, "a.45" is 45 on the ambiguous one.
+/// A usage threshold on one of the three selections. The event name carries both parts:
+/// "p.12" is 12 minutes on the procrastination selection, "a.45" on the ambiguous one, "w.20" on the work one.
 struct UsageEvent: Equatable, Sendable {
     enum Source: String, Sendable {
         case procrastination = "p"
         case ambiguous = "a"
+        case productive = "w"
     }
 
     var source: Source

@@ -99,6 +99,14 @@ final class AppModel {
         return s.applicationTokens.count + s.categoryTokens.count + s.webDomainTokens.count
     }
 
+    /// A broad list holds a whole category beside a narrower list: apps in both are counted twice.
+    var categoryOverlap: Bool {
+        func empty(_ kind: SelectionKind) -> Bool { count(kind) == 0 }
+        let p = binding(for: .procrastination), a = binding(for: .ambiguous)
+        return (!p.categoryTokens.isEmpty && (!empty(.ambiguous) || !empty(.productive)))
+            || (!a.categoryTokens.isEmpty && !empty(.productive))
+    }
+
     func finishOnboarding() async {
         store.onboarded = true
         onboarded = true
@@ -108,6 +116,8 @@ final class AppModel {
 
     /// Re-registers the daily schedule (after a selection changed) and puts the gate back up.
     func restartMonitoring() {
+        store.normalizeSelections()
+        for kind in SelectionKind.allCases { selections[kind] = store.selection(kind) }
         store.lastError = nil
         do {
             try VagoMonitoring.startDaily(store)

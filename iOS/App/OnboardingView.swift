@@ -63,6 +63,8 @@ struct OnboardingView: View {
         VStack(spacing: 16) {
             page(emoji, title, text)
             Text(suggestion).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            Text("An app you pick in a more specific list wins: Work beats Both, and Both beats Procrastination.")
+                .font(.footnote).foregroundStyle(.tertiary).multilineTextAlignment(.center)
             Button {
                 picking = kind
             } label: {

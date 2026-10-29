@@ -13,6 +13,8 @@ struct DayCounters: Codable, Equatable, Sendable {
     var procrastinationMinutes = 0
     /// Highest threshold reached on the ambiguous selection.
     var ambiguousMinutes = 0
+    /// Highest threshold reached on the productive selection.
+    var productiveMinutes = 0
     /// Ambiguous minutes counted as productive (work passes).
     var ambiguousAsWork = 0
     /// Ambiguous minutes counted as procrastination (scroll passes and no pass).
@@ -23,7 +25,7 @@ struct DayCounters: Codable, Equatable, Sendable {
     init(day: DayKey) { self.day = day }
 
     var procrastinationSeconds: Int { (procrastinationMinutes + ambiguousAsScroll) * 60 }
-    var productiveSeconds: Int { ambiguousAsWork * 60 }
+    var productiveSeconds: Int { (productiveMinutes + ambiguousAsWork) * 60 }
 
     /// Applies one threshold. Returns the minutes it added (0 for a duplicate or an old callback).
     @discardableResult
@@ -34,6 +36,11 @@ struct DayCounters: Codable, Equatable, Sendable {
             let added = event.minute - procrastinationMinutes
             guard added > 0 else { return 0 }
             procrastinationMinutes = event.minute
+            return added
+        case .productive:
+            let added = event.minute - productiveMinutes
+            guard added > 0 else { return 0 }
+            productiveMinutes = event.minute
             return added
         case .ambiguous:
             let added = event.minute - ambiguousMinutes

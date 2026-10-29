@@ -62,7 +62,7 @@ final class VagoMonitorExtension: DeviceActivityMonitor {
 
         // A focus session that sees distraction wilts after a minute of it. The focus shield
         // makes this rare (a web view, a gap in the selection), but the tree must tell the truth.
-        if added > 0, store.activeFocus(now: now) != nil {
+        if added > 0, usage.source != .productive, store.activeFocus(now: now) != nil {
             store.updateLastSession { $0.tick(bucket: .procrastination, seconds: added * 60, now: now) }
             if store.activeFocus(now: now) == nil { finishFocus(now: now) }
         }

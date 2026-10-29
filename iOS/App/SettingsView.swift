@@ -27,7 +27,13 @@ struct SettingsView: View {
                 } header: {
                     Text("Apps")
                 } footer: {
-                    Text("Both work and scroll apps ask “Work or scroll?” before they open.")
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Both work and scroll apps ask “Work or scroll?” before they open. An app you pick in a more specific list wins: Work beats Both, and Both beats Procrastination.")
+                        if model.categoryOverlap {
+                            Label("A whole category in a broad list also contains apps from a narrower list, and those minutes are counted twice. Pick single apps instead of categories where you can.", systemImage: "exclamationmark.triangle")
+                                .foregroundStyle(.orange)
+                        }
+                    }
                 }
 
                 Section {

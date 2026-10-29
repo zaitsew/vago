@@ -59,6 +59,37 @@ struct VagoStore: @unchecked Sendable {
         save(selection, "selection.\(kind.rawValue)")
     }
 
+    /// Makes the lists disjoint where the API allows, so a minute is not counted twice: an app
+    /// picked in a more specific list wins (Work over "Both", "Both" over Procrastination).
+    /// Categories cannot be subtracted: a category in a broad list still contains the apps
+    /// picked in a narrower one (see `hasCategoryOverlap`).
+    func normalizeSelections() {
+        let productive = selection(.productive)
+        var ambiguous = selection(.ambiguous)
+        var procrastination = selection(.procrastination)
+
+        ambiguous.applicationTokens.subtract(productive.applicationTokens)
+        ambiguous.webDomainTokens.subtract(productive.webDomainTokens)
+        let narrower = productive.applicationTokens.union(ambiguous.applicationTokens)
+        let narrowerWeb = productive.webDomainTokens.union(ambiguous.webDomainTokens)
+        procrastination.applicationTokens.subtract(narrower)
+        procrastination.webDomainTokens.subtract(narrowerWeb)
+
+        setSelection(ambiguous, for: .ambiguous)
+        setSelection(procrastination, for: .procrastination)
+    }
+
+    /// Whether a list that holds a whole category sits beside a narrower, non-empty list. The
+    /// category's own events then also count the narrower list's apps.
+    func hasCategoryOverlap() -> Bool {
+        func isEmpty(_ s: FamilyActivitySelection) -> Bool {
+            s.applicationTokens.isEmpty && s.categoryTokens.isEmpty && s.webDomainTokens.isEmpty
+        }
+        let p = selection(.procrastination), a = selection(.ambiguous), w = selection(.productive)
+        return (!p.categoryTokens.isEmpty && (!isEmpty(a) || !isEmpty(w)))
+            || (!a.categoryTokens.isEmpty && !isEmpty(w))
+    }
+
     // MARK: Counters, pass, limit, ledger
 
     /// Today's counters. Counters of an earlier day read as empty.

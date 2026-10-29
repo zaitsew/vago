@@ -6,13 +6,14 @@ import VagoKit
 /// Starts and stops the three `DeviceActivity` schedules. Used by the app (daily, focus)
 /// and by the shield action extension (pass).
 enum VagoMonitoring {
-    /// One daily schedule, 04:00 to 03:59, repeating. Threshold events on the procrastination
-    /// and the ambiguous selection. `includesPastActivity` keeps the day's total when the
+    /// One daily schedule, 04:00 to 03:59, repeating. Threshold events on the procrastination,
+    /// the ambiguous and the productive selection. `includesPastActivity` keeps the day's total when the
     /// schedule is restarted in the afternoon (a changed selection, a manual restart).
     static func startDaily(_ store: VagoStore = VagoStore()) throws {
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
         for (source, kind) in [(UsageEvent.Source.procrastination, SelectionKind.procrastination),
-                               (.ambiguous, .ambiguous)] {
+                               (.ambiguous, .ambiguous),
+                               (.productive, .productive)] {
             let selection = store.selection(kind)
             guard !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty
                     || !selection.webDomainTokens.isEmpty else { continue }
@@ -45,25 +46,35 @@ enum VagoMonitoring {
             webDomains: selection.webDomainTokens,
             threshold: DateComponents(minute: pass.thresholdMinutes)
         )
-        let schedule = oneShot(from: pass.start, minutes: Pass.windowMinutes)
+        let start = minuteFloor(pass.start)
+        let schedule = oneShot(from: start, to: start.addingTimeInterval(TimeInterval(Pass.windowMinutes * 60)))
         try DeviceActivityCenter().startMonitoring(.pass, during: schedule, events: [.passLimit: event])
     }
 
-    /// A focus session: no events, only the interval end matters.
+    /// A focus session: no events, only the interval end matters. The interval starts at the
+    /// minute the session started and ends at the next whole minute at or after the session's
+    /// end, so the shield never lifts early. Apple's minimum interval is 15 minutes.
     static func startFocus(_ session: FocusSession) throws {
-        let schedule = oneShot(from: session.start, minutes: max(session.minutes, 15))
-        try DeviceActivityCenter().startMonitoring(.focus, during: schedule)
+        let start = minuteFloor(session.start)
+        let end = max(minuteCeil(session.end), start.addingTimeInterval(15 * 60))
+        try DeviceActivityCenter().startMonitoring(.focus, during: oneShot(from: start, to: end))
     }
 
     static func stop(_ names: DeviceActivityName...) {
         DeviceActivityCenter().stopMonitoring(names)
     }
 
-    /// A non-repeating schedule that begins at the start of `date`'s minute.
-    private static func oneShot(from date: Date, minutes: Int) -> DeviceActivitySchedule {
+    private static func minuteFloor(_ date: Date) -> Date {
+        Date(timeIntervalSinceReferenceDate: (date.timeIntervalSinceReferenceDate / 60).rounded(.down) * 60)
+    }
+
+    private static func minuteCeil(_ date: Date) -> Date {
+        Date(timeIntervalSinceReferenceDate: (date.timeIntervalSinceReferenceDate / 60).rounded(.up) * 60)
+    }
+
+    /// A non-repeating schedule between two whole-minute dates.
+    private static func oneShot(from start: Date, to end: Date) -> DeviceActivitySchedule {
         let calendar = Calendar.current
-        let start = calendar.date(from: calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)) ?? date
-        let end = start.addingTimeInterval(TimeInterval(minutes * 60))
         let fields: Set<Calendar.Component> = [.year, .month, .day, .hour, .minute]
         return DeviceActivitySchedule(
             intervalStart: calendar.dateComponents(fields, from: start),
