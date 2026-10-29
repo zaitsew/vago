@@ -11,7 +11,7 @@ public enum Device: String, Codable, Sendable, CaseIterable {
 }
 
 /// What the Mac (or a shield) observed for one second of use.
-public struct Observation: Sendable, Equatable {
+public struct ActivitySample: Sendable, Equatable {
     public var bundleID: String          // "com.google.Chrome"
     public var appName: String
     public var windowTitle: String?      // front window title, when known
@@ -38,8 +38,8 @@ public struct Observation: Sendable, Equatable {
     }
 }
 
-/// Codable twin of `Observation` (a `URL` is stored as its string).
-public struct ObservationRecord: Codable, Sendable, Equatable {
+/// Codable twin of `ActivitySample` (a `URL` is stored as its string).
+public struct ActivitySampleRecord: Codable, Sendable, Equatable {
     public var bundleID: String
     public var appName: String
     public var windowTitle: String?
@@ -52,11 +52,11 @@ public struct ObservationRecord: Codable, Sendable, Equatable {
         self.url = url
     }
 
-    public init(_ o: Observation) {
+    public init(_ o: ActivitySample) {
         self.init(bundleID: o.bundleID, appName: o.appName, windowTitle: o.windowTitle, url: o.url?.absoluteString)
     }
 
-    public var observation: Observation {
-        Observation(bundleID: bundleID, appName: appName, windowTitle: windowTitle, url: url.flatMap { URL(string: $0) })
+    public var sample: ActivitySample {
+        ActivitySample(bundleID: bundleID, appName: appName, windowTitle: windowTitle, url: url.flatMap { URL(string: $0) })
     }
 }

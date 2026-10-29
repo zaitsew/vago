@@ -54,14 +54,17 @@ public struct FocusSession: Codable, Sendable, Equatable {
 
     /// Feeds one stretch of foreground use. Procrastination and ambiguous use distract;
     /// productive and neutral use do not. Does nothing once the session has stopped.
+    /// Use after the planned end does not count: the tree has already grown.
     public mutating func tick(bucket: Bucket, seconds: Int, now: Date) {
         guard state == .growing else { return }
         if bucket == .procrastination || bucket == .ambiguous {
-            distractedSeconds += max(0, seconds)
+            let tickStart = now.addingTimeInterval(-TimeInterval(max(0, seconds)))
+            let beforeEnd = Int(max(0, min(now, end).timeIntervalSince(tickStart)))
+            distractedSeconds += min(max(0, seconds), beforeEnd)
         }
         if distractedSeconds > Self.wiltThresholdSeconds {
             state = .wilted
-            endedAt = now
+            endedAt = min(now, end)
         } else if now >= end {
             state = .grown
             endedAt = end
