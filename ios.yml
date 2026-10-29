@@ -18,6 +18,13 @@ targetTemplates:
         SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_EMIT_LOC_STRINGS: NO
+      # The archive signs manually with the App Store profiles that `testflight bootstrap`
+      # installs, named "<bundle id> AppStore" (each target sets its own below). Debug keeps
+      # automatic signing for running from Xcode.
+      configs:
+        Release:
+          "CODE_SIGN_STYLE[sdk=iphoneos*]": Manual
+          "CODE_SIGN_IDENTITY[sdk=iphoneos*]": Apple Distribution
     dependencies:
       - package: VagoKit
         product: VagoKit
@@ -51,6 +58,9 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         CODE_SIGN_ENTITLEMENTS: iOS/App/Vago.entitlements
+      configs:
+        Release:
+          "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": com.zaitsew.vago AppStore
     info:
       path: iOS/App/Info.plist
       properties:
@@ -87,6 +97,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.zaitsew.vago.monitor
         PRODUCT_NAME: VagoMonitor
         CODE_SIGN_ENTITLEMENTS: iOS/Monitor/VagoMonitor.entitlements
+      configs:
+        Release:
+          "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": com.zaitsew.vago.monitor AppStore
     info:
       path: iOS/Monitor/Info.plist
       properties:
@@ -116,6 +129,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.zaitsew.vago.shield
         PRODUCT_NAME: VagoShield
         CODE_SIGN_ENTITLEMENTS: iOS/Shield/VagoShield.entitlements
+      configs:
+        Release:
+          "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": com.zaitsew.vago.shield AppStore
     info:
       path: iOS/Shield/Info.plist
       properties:
@@ -145,6 +161,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.zaitsew.vago.shieldaction
         PRODUCT_NAME: VagoShieldAction
         CODE_SIGN_ENTITLEMENTS: iOS/ShieldAction/VagoShieldAction.entitlements
+      configs:
+        Release:
+          "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": com.zaitsew.vago.shieldaction AppStore
     info:
       path: iOS/ShieldAction/Info.plist
       properties:
@@ -175,6 +194,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.zaitsew.vago.report
         PRODUCT_NAME: VagoReport
         CODE_SIGN_ENTITLEMENTS: iOS/Report/VagoReport.entitlements
+      configs:
+        Release:
+          "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": com.zaitsew.vago.report AppStore
     info:
       path: iOS/Report/Info.plist
       properties:
@@ -204,6 +226,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.zaitsew.vago.widgets
         PRODUCT_NAME: VagoWidgets
         CODE_SIGN_ENTITLEMENTS: iOS/Widgets/VagoWidgets.entitlements
+      configs:
+        Release:
+          "PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]": com.zaitsew.vago.widgets AppStore
     info:
       path: iOS/Widgets/Info.plist
       properties:
