@@ -48,9 +48,10 @@ final class Tracker {
         guard Presence.secondsSinceInput() < Presence.idleThreshold(for: obs) else { return pause(.idle, now) }
 
         // Wall-clock seconds since the last tick, so a slow judge call or a busy Mac loses nothing.
+        // Lock, sleep and idle reset `lastTick`; the 60-second cap only guards a stalled loop.
         let elapsed = lastTick.map { now.timeIntervalSince($0) } ?? 1
         lastTick = now
-        carry += min(elapsed, 10)
+        carry += min(elapsed, 60)
         let whole = Int(carry)
         carry -= Double(whole)
         guard whole > 0 else { return }

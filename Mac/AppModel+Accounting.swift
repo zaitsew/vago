@@ -55,11 +55,14 @@ extension AppModel {
         flush(now: now)
     }
 
-    /// Extends the open session while the owner stays on the same place with the same verdict.
+    /// Extends the open session while the owner stays on the same place with the same verdict
+    /// and the same certainty, so an unclear stretch always reaches the review queue.
     private func record(_ obs: ActivitySample, key: String, classification c: Classification, seconds: Int, now: Date) {
         guard c.bucket != .neutral else { currentSession = nil; return }
         if let open = currentSession, open.key == key, sessions.indices.contains(open.index),
-           sessions[open.index].guess == c.bucket, now.timeIntervalSince(open.lastAt) <= 4 {
+           sessions[open.index].guess == c.bucket,
+           reviewPending.contains(sessions[open.index].id) == c.unclear,
+           now.timeIntervalSince(open.lastAt) <= 4 {
             sessions[open.index].seconds += seconds
             currentSession = (open.index, key, now)
             return
