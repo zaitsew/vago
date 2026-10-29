@@ -75,7 +75,11 @@ struct VagoStore: @unchecked Sendable {
     func limit() -> AdaptiveLimit { load(AdaptiveLimit.self, "limit") ?? AdaptiveLimit() }
     func setLimit(_ limit: AdaptiveLimit) { save(limit, "limit") }
 
-    func ledger() -> Ledger { load(Ledger.self, "ledger") ?? Ledger() }
+    /// The ledger is kept as one `DeviceDay.encoded()` value per ledger key, the same format as iCloud.
+    func ledger() -> Ledger {
+        guard let stored = load([String: Data].self, "ledgerDays") else { return Ledger() }
+        return Ledger(days: stored.compactMapValues { DeviceDay(encoded: $0) })
+    }
 
     /// How many days of the ledger the App Group keeps. The adaptive limit needs 7.
     static let ledgerDays = 120
@@ -83,7 +87,7 @@ struct VagoStore: @unchecked Sendable {
     func setLedger(_ ledger: Ledger) {
         let cutoff = DayKey.of(.now).adding(days: -Self.ledgerDays)
         let kept = ledger.days.filter { $0.value.day >= cutoff }
-        save(Ledger(days: kept), "ledger")
+        save(kept.mapValues { $0.encoded() }, "ledgerDays")
     }
 
     /// Merges one device's day into the stored ledger.

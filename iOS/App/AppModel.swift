@@ -2,11 +2,7 @@ import DeviceActivity
 import FamilyControls
 import Foundation
 import Observation
-// VagoKit declares a type named `Observation`, which hides the Observation module that the
-// `@Observable` macro expands into. Import only the VagoKit types this file uses.
-import struct VagoKit.AdaptiveLimit
-import struct VagoKit.DayKey
-import struct VagoKit.FocusSession
+import VagoKit
 import WidgetKit
 
 /// The app's state. Counting happens in the monitor extension; this model reads what the
