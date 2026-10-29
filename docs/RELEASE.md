@@ -54,14 +54,14 @@ These come from Apple's Screen Time API, not from Vago. They are the reason the 
 - **Threshold granularity.** Vago learns usage only from threshold events: every minute up to
   45, every 5 minutes up to 120, every 15 minutes up to 240, per list. The counter is the
   highest threshold reached, so between 45 and 120 minutes it moves in steps of 5, and past 120
-  in steps of 15. Usage past 240 minutes on one list is not counted further. The system
+  in steps of 15. Usage past 240 minutes on one list is not counted further. The Work list is counted the same way and adds to productive time. The system
   reports usage in whole minutes and does not say which app ran.
 - **Callbacks are not on time.** `eventDidReachThreshold` can arrive late, twice, out of order,
   or (rarely) not at all. The counters only move up, so a duplicate or old callback is ignored,
   but a lost callback shows only when a later threshold arrives. Reported flakiness: callbacks
   stop after a reboot until the app is opened once; restarting a schedule resets the system's
   count unless `includesPastActivity` is set (Vago sets it); many events per schedule (Vago
-  registers 68 per list, 136 in all) can make `startMonitoring` fail with `excessiveActivities`
+  registers 68 per list, 204 in all) can make `startMonitoring` fail with `excessiveActivities`
   on some devices. The error shows in Settings > Counting, and "Restart counting" re-registers.
 - **Work or scroll minutes.** The new minutes between two ambiguous thresholds go to the pass
   that covers them. A callback that arrives after the pass ended (up to 10 minutes) still
@@ -92,3 +92,18 @@ These come from Apple's Screen Time API, not from Vago. They are the reason the 
   foreground, so a late callback cannot leave the shield on once the app opens.
 - **iCloud.** The key-value store syncs within seconds to minutes and needs the same iCloud
   account on both devices. Each device writes only its own key, `day/<id>/<device>`.
+
+## Overlapping lists
+
+When saving, Vago removes single apps and web domains from a broader list if a narrower list
+holds them (Work over "Both", "Both" over Procrastination), so a minute counts once. Screen
+Time offers no way to subtract an app from a whole category. If Procrastination holds a
+category (Social, say) and an app of that category is also on a narrower list, that app's
+minutes are counted by both lists. Settings shows a warning when a list with a category sits
+beside a non-empty narrower list. Prefer single apps over categories where the lists overlap.
+
+## Known gaps
+
+- A threshold callback that arrives late is attributed to the latest pass, so a delayed ambiguous minute can go to the wrong kind (`DayCounters.swift`, `apply`).
+- Pre-focus usage whose callback arrives after a focus session starts is charged to that session as distraction (`VagoMonitorExtension.swift`, `eventDidReachThreshold`).
+- A focus session that crosses 04:00 credits its whole length to the day it started in (`VagoStore.swift`, `focusSeconds`).
