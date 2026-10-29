@@ -1,7 +1,7 @@
 # Vago iPhone — run and release
 
-Status: Debug on the owner's iPhone from Xcode. No TestFlight yet, no App Store submission:
-the seller account is on a submission hold (POLICY section 14).
+Status: internal TestFlight (see below). No App Store or beta-review submission: the seller
+account is on a submission hold (POLICY section 14).
 
 ## Run on the iPhone now
 
@@ -24,34 +24,51 @@ Check that it works: open an app from the "Work or scroll" list, choose Work, us
 minute and come back. Today shows the count after the next threshold report (see limits below).
 Settings > Counting > "Last report" shows when the monitor last heard from Screen Time.
 
-## Before TestFlight: Family Controls (Distribution)
+## TestFlight
 
-The development entitlement is for Xcode builds only. A TestFlight or App Store build needs
-Apple's **Family Controls (Distribution)** entitlement, which Apple grants by hand.
+App Store Connect record: **Vago: Focus Timer**, app id `6828551197`, SKU `vago`, bundle
+`com.zaitsew.vago`, primary language English (U.S.), created 2026-10-29. The plain name "Vago"
+was taken on the store.
 
-**Status: requested 2026-10-29, request ID `UV8Q3ZRHY8`, waiting for Apple.** The form
-(https://developer.apple.com/contact/request/family-controls-distribution) is one request per
-team, not per bundle id: it was filed for Fabrique Futur LLC (`VWH2FKV78Q`), and Apple replies
-to dev@fafutur.com. Submitting it accepted Apple's Family Controls terms for the team: the app's
-primary purpose is parental controls or personal focus and productivity, and usage data serves
-only those controls (no sharing, advertising or data brokers).
+First build: 0.1.0 (1), uploaded 2026-10-29. Testers: the internal group "Team" (created through
+the API, access to all builds, no beta review) with ceozaitsev@gmail.com. `testflight beta
+group` only makes external groups, which need beta review.
 
-Once Apple approves, these bundle ids carry `com.apple.developer.family-controls`:
+Upload (internal testing only; no beta or App Store review while the hold stands):
 
-| Bundle id | Target |
-|---|---|
-| `com.zaitsew.vago` | Vago (app) |
-| `com.zaitsew.vago.monitor` | VagoMonitor (DeviceActivityMonitor) |
-| `com.zaitsew.vago.shield` | VagoShield (ShieldConfiguration) |
-| `com.zaitsew.vago.shieldaction` | VagoShieldAction (ShieldAction) |
-| `com.zaitsew.vago.report` | VagoReport (DeviceActivityReport) |
+```
+xcodegen generate
+~/ops/bin/testflight release --project Vago.xcodeproj --scheme Vago --bundle-id com.zaitsew.vago \
+    --also-bundle-id com.zaitsew.vago.monitor --also-bundle-id com.zaitsew.vago.shield \
+    --also-bundle-id com.zaitsew.vago.shieldaction --also-bundle-id com.zaitsew.vago.report \
+    --also-bundle-id com.zaitsew.vago.widgets
+```
 
-All six App IDs (these five and `com.zaitsew.vago.widgets`) were registered on 2026-10-29
-through the App Store Connect API, with the App Group. The API cannot set Family Controls, and
-it refused iCloud on `com.zaitsew.vago` without a CloudKit setting. Xcode's automatic signing
-adds both for Debug builds. For release, enable Family Controls and iCloud (key-value store) on
-the App IDs in the developer website after approval, then regenerate the profiles
-(`~/ops/bin/testflight bootstrap --refresh-profiles`).
+Release archives sign manually with Apple Distribution and the `<bundle id> AppStore` profiles
+(`ios.yml`). After any App ID capability change, recreate them with
+`~/ops/bin/testflight bootstrap --refresh-profiles` and the six `--bundle-id` values above.
+
+### Family Controls (Distribution)
+
+The development entitlement is for Xcode builds only. TestFlight and the App Store need Apple's
+**Family Controls (Distribution)** entitlement, which Apple grants by hand. It was requested on
+2026-10-29 (request ID `UV8Q3ZRHY8`, one request per team: Fabrique Futur LLC, `VWH2FKV78Q`;
+replies go to dev@fafutur.com) and approved the same day. Submitting it accepted Apple's Family
+Controls terms for the team: the app's primary purpose is parental controls or personal focus
+and productivity, and usage data serves only those controls (no sharing, advertising or data
+brokers).
+
+App ID capabilities, set in the developer website on 2026-10-29 (the App Store Connect API
+cannot set Family Controls or App Group membership):
+
+| Bundle id | Target | Family Controls | App Group `group.com.zaitsew.vago` | iCloud |
+|---|---|---|---|---|
+| `com.zaitsew.vago` | Vago (app) | Development + Distribution | yes | yes (key-value store) |
+| `com.zaitsew.vago.monitor` | VagoMonitor | Development + Distribution | yes | no |
+| `com.zaitsew.vago.shield` | VagoShield | Development + Distribution | yes | no |
+| `com.zaitsew.vago.shieldaction` | VagoShieldAction | Development + Distribution | yes | no |
+| `com.zaitsew.vago.report` | VagoReport | Development + Distribution | yes | no |
+| `com.zaitsew.vago.widgets` | VagoWidgets | no | yes | no |
 
 ## Platform limits
 
