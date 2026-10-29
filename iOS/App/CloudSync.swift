@@ -11,13 +11,12 @@ enum CloudSync {
 
     static var isSignedIn: Bool { FileManager.default.ubiquityIdentityToken != nil }
 
-    /// Writes this iPhone's recent days. A key is rewritten only when the stored value is older.
+    /// Writes every iPhone day in the ledger that iCloud does not have yet or has older.
     static func push(_ ledger: Ledger, today: DayKey) {
-        let days = (0...1).map { today.adding(days: -$0) }
-        for day in days {
-            guard let value = ledger.days[Ledger.key(day, .iphone)] else { continue }
-            let key = Ledger.key(day, .iphone)
-            if let stored = store.object(forKey: key).flatMap({ DeviceDay(encoded: $0) }), stored.updatedAt >= value.updatedAt { continue }
+        for value in ledger.days.values where value.device == .iphone {
+            let key = Ledger.key(value.day, .iphone)
+            if let stored = store.object(forKey: key).flatMap({ DeviceDay(encoded: $0) }),
+               stored.updatedAt >= value.updatedAt { continue }
             store.set(value.encoded(), forKey: key)
         }
         // Keep the store well under its 1024-key limit: drop this iPhone's keys beyond the ledger window.
