@@ -22,7 +22,10 @@ public struct VagoMCPServer: Sendable {
         guard let data = line.data(using: .utf8),
               let object = try? JSONSerialization.jsonObject(with: data)
         else { return Self.encode(Self.error(id: NSNull(), code: -32700, message: "Parse error")) }
-        guard let request = object as? [String: Any], let method = request["method"] as? String else {
+        guard let request = object as? [String: Any], request["jsonrpc"] as? String == "2.0",
+              let method = request["method"] as? String,
+              request["id"] == nil || request["id"] is String || Self.isNumber(request["id"])
+        else {
             return Self.encode(Self.error(id: NSNull(), code: -32600, message: "Invalid request"))
         }
         guard let id = request["id"] else { return nil }              // a notification
@@ -49,6 +52,12 @@ public struct VagoMCPServer: Sendable {
         default:
             return Self.encode(Self.error(id: id, code: -32601, message: "Method not found: \(method)"))
         }
+    }
+
+    /// A JSON number, not a JSON boolean (both bridge to `NSNumber`).
+    private static func isNumber(_ value: Any?) -> Bool {
+        guard let number = value as? NSNumber else { return false }
+        return CFGetTypeID(number) != CFBooleanGetTypeID()
     }
 
     // MARK: Tools

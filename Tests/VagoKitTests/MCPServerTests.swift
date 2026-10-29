@@ -102,6 +102,11 @@ struct MCPServerTests {
         #expect((unknownTool["error"] as! [String: Any])["code"] as? Int == -32602)
         let unknownMethod = Self.reply(#"{"jsonrpc":"2.0","id":7,"method":"resources/list"}"#)
         #expect((unknownMethod["error"] as! [String: Any])["code"] as? Int == -32601)
+        for bad in [#"{"jsonrpc":"1.0","id":8,"method":"ping"}"#, #"{"id":9,"method":"ping"}"#,
+                    #"{"jsonrpc":"2.0","id":{"a":1},"method":"ping"}"#, #"{"jsonrpc":"2.0","id":true,"method":"ping"}"#] {
+            #expect((Self.reply(bad)["error"] as! [String: Any])["code"] as? Int == -32600)
+        }
+        #expect(Self.reply(#"{"jsonrpc":"2.0","id":10,"method":"ping"}"#)["result"] != nil)
         let garbage = Self.reply("not json")
         #expect((garbage["error"] as! [String: Any])["code"] as? Int == -32700)
         #expect(garbage["id"] is NSNull)

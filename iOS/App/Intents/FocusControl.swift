@@ -69,6 +69,7 @@ enum FocusControl {
     /// Widget and Live Activity follow a changed block without waiting for the next threshold.
     @MainActor
     static func refreshSurfaces(store: VagoStore = VagoStore()) async {
+        store.publishToday()
         WidgetCenter.shared.reloadAllTimelines()
         await LiveActivityController.sync(store)
     }
