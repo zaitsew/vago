@@ -31,7 +31,7 @@ App Store Connect record: **Vago: Focus Timer**, app id `6828551197`, SKU `vago`
 was taken on the store.
 
 First build: 0.1.0 (1), uploaded 2026-10-29. Testers: the internal group "Team" (created through
-the API, access to all builds, no beta review) with ceozaitsev@gmail.com. `testflight beta
+the API, access to all builds, no beta review) with the owner's tester account. `testflight beta
 group` only makes external groups, which need beta review.
 
 Upload (internal testing only; no beta or App Store review while the hold stands):
@@ -53,7 +53,7 @@ Release archives sign manually with Apple Distribution and the `<bundle id> AppS
 The development entitlement is for Xcode builds only. TestFlight and the App Store need Apple's
 **Family Controls (Distribution)** entitlement, which Apple grants by hand. It was requested on
 2026-10-29 (request ID `UV8Q3ZRHY8`, one request per team: Fabrique Futur LLC, `VWH2FKV78Q`;
-replies go to dev@fafutur.com) and approved the same day. Submitting it accepted Apple's Family
+replies go to the team's developer mailbox) and approved the same day. Submitting it accepted Apple's Family
 Controls terms for the team: the app's primary purpose is parental controls or personal focus
 and productivity, and usage data serves only those controls (no sharing, advertising or data
 brokers).
