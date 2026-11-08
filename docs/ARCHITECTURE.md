@@ -205,17 +205,37 @@ public enum Readout { public static func short(seconds: Int, limitMinutes: Int) 
   When `SystemLanguageModel.default.availability` is not `.available`, the classifier runs
   without a judge. Model-routing note (POLICY §1): on-device, because window titles are
   private, the call runs every few seconds, and the on-device model is free.
-- **Menu bar**: an `NSStatusItem` whose attributed title is `Readout.short` tinted by `Mood`.
-  During focus it shows the stage emoji and the minutes left.
+- **Autonomy**: `AppModel.process` builds a `JudgeContext` (local hour, seconds the place has
+  been in front, the previous place within 10 minutes as "Xcode (work)") for every
+  classification. Each classifier result goes to `JudgeAudit.record` and `VerdictMemory.note`; a
+  rule the memory returns is adopted (`RuleBook.adopt`) and handed to the classifier. At launch,
+  at day start and after a correction the classifier gets `setJudgeTrusted(JudgeAudit.trusted)`;
+  `AppModel.judgeHeld` shows the hold. Both structs persist in `state.json`.
+- **Corrections**: `correctCurrent(as:)` (the popover's Wrong?) and `correctCall(_:as:)` (the Day
+  window) learn a `.review` rule, move the sessions' seconds hour by hour with `DeviceDay.move`,
+  and call `JudgeAudit.corrected(on:)`. Unsure calls stay in `reviewPending` until corrected.
+- **Nudge**: "Work or scroll?" only for a mixed place with an unsure call after 60 seconds in
+  front, at most once per place per day. The focus-session distraction nudge is unchanged.
+- **Menu bar**: an `NSStatusItem` whose attributed title is the mood emoji and the productive
+  share (`😄 92%`), tinted by `Mood`. During focus it shows the stage emoji and the minutes left.
+  Right click opens a menu: Day, Settings…, Quit.
 - **Move breaks**: every counted second feeds `BreakCoach.active`. When `wantsPanel` is true
   and no focus session runs and the microphone is idle (`Microphone.inUse`, a CoreAudio device
   property; Vago never opens the microphone), the panel shows at the next app switch or after
   3 minutes. It shares `NudgePanel` with the nudge and never replaces an open nudge.
-- **Popover**: today's procrastination, work and focus across devices; the limit and
-  baseline; top distractions; Start focus 25 / 50; time since the last break and today's moves;
-  the review queue; settings (goals text, move reminders, launch at login).
+- **Popover** (`PopoverView`): a fixed 340-point layout with no scroll view and nothing that
+  expands: the productive share across devices, mood and the waste limit, the `DayStrip`, the Now
+  line with Wrong?, focus, the move row, and Day / Settings… / Quit.
+- **Day window** (`DayWindow`, an `NSWindow` hosting SwiftUI, made once and reused): the share
+  with a device filter, the large `DayStrip` with hour tooltips, top waste and top work (Mac
+  sessions), and Vago's calls with a Work / Neutral / Waste correction. Earlier days from the
+  ledger show the share and the strip.
+- **Settings window** (`SettingsWindow`, same host): goals, launch at login, move reminders,
+  permissions, the AI judge state, iCloud, and Forget learned rules.
+- **DayStrip**: one lane per device, one stacked cell per hour (work, neutral, waste), from
+  `Ledger.hours(for:devices:)`; at least 07:00–23:00.
 - **Storage**: `~/Library/Application Support/Vago/state.json` (rules, limit, sessions,
-  focus, breaks). Today's `DeviceDay` is written to the key-value store every 30 seconds.
+  focus, breaks, judge audit, verdict memory). Today's `DeviceDay` is written to the key-value store every 30 seconds.
   `~/Library/Application Support/Vago/usage.json` holds the counters `./check.sh usage` prints.
 - **Install**: `scripts/install-mac.sh`, signed for this Mac like Knut's. No Mac App Store
   build: the tracker needs Accessibility and Apple Events, which the sandbox does not allow.

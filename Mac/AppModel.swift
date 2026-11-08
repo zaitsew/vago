@@ -4,14 +4,43 @@ import Observation
 import ServiceManagement
 import VagoKit
 
-/// A group of unclear sessions on one site or app, shown in the review queue.
-struct ReviewItem: Identifiable, Equatable {
+/// One place Vago made a call on today, grouped by site or app, shown in the Day window's
+/// "Vago's calls" with a one-tap correction.
+struct CallItem: Identifiable, Equatable {
     var id: String                    // SiteKey
     var sample: ActivitySample
     var label: String
     var seconds: Int
-    var reason: String                // what the AI guessed, or why there was no guess
+    var bucket: Bucket
+    var reason: String                // the AI's reason, or why there was none
+    var unsure: Bool
+    var corrected: Bool
     var sessionIDs: [UUID]
+}
+
+/// What is in front right now, for the popover's "Now" line.
+struct NowPlace: Equatable {
+    var key: String                   // SiteKey
+    var label: String
+    var sample: ActivitySample
+    var bucket: Bucket
+    var reason: String
+    var source: Classification.Source
+    var unclear: Bool
+}
+
+/// The two windows the popover opens.
+enum AppWindow: Sendable { case day, settings }
+
+/// Reasons the app writes into a session itself, to tell them from the AI's.
+enum CallReason {
+    static let answer = "your answer today"
+    static let corrected = "you corrected this"
+
+    /// True for sessions a rule or an answer settled: not one of Vago's calls.
+    static func isSettled(_ reason: String) -> Bool {
+        reason.hasPrefix("rule: ") || reason == answer
+    }
 }
 
 enum PauseReason: Sendable, Equatable { case locked, idle }
@@ -34,11 +63,15 @@ final class AppModel {
     var rules: RuleBook
     var onboarded: Bool
     var breaks: BreakCoach
+    var judgeAudit: JudgeAudit
+    var verdictMemory: VerdictMemory
 
     // MARK: Live
     var clock = Date()
     var pause: PauseReason?
-    var currentLabel: String?
+    var now: NowPlace?
+    /// True while `JudgeAudit` holds the judge's "work" verdicts on ambiguous places.
+    var judgeHeld = false
     var accessibilityGranted = Permissions.accessibilityGranted
     var automation: [String: AutomationState] = [:]
     var judgeAvailable = false
@@ -58,8 +91,14 @@ final class AppModel {
     @ObservationIgnored var breakLastKey: String?
     @ObservationIgnored var breakDueSince: Date?
     @ObservationIgnored var breakHeldUntil: Date?
+    /// The place in front: since when, and its last call. Feeds the judge's context.
+    @ObservationIgnored var place: (key: String, label: String, bucket: Bucket, since: Date, lastAt: Date)?
+    /// The place before it, for "Just before: Xcode (work)".
+    @ObservationIgnored var previousPlace: (label: String, bucket: Bucket, at: Date)?
     /// Called after every change the menu bar shows.
     @ObservationIgnored var onChange: (@MainActor () -> Void)?
+    /// Opens the Day or the Settings window (wired by the status item).
+    @ObservationIgnored var openWindow: (@MainActor (AppWindow) -> Void)?
 
     init(store: StateStore = StateStore(), now: Date = Date()) {
         self.store = store
@@ -75,6 +114,8 @@ final class AppModel {
         focusLog = state.focusLog
         onboarded = state.onboarded
         breaks = state.breaks
+        judgeAudit = state.judgeAudit
+        verdictMemory = state.verdictMemory
         let book = RuleBook(custom: state.customRules)
         rules = book
         today = state.today ?? DeviceDay(day: day, device: .mac, updatedAt: now)
@@ -90,6 +131,7 @@ final class AppModel {
             limit.roll(to: day, ledger: ledger)
         }
         ledger.merge(today)
+        applyJudgeTrust()
     }
 
     // MARK: Lifecycle
@@ -144,6 +186,8 @@ final class AppModel {
         s.focus = focus
         s.focusLog = focusLog
         s.breaks = breaks
+        s.judgeAudit = judgeAudit
+        s.verdictMemory = verdictMemory
         return s
     }
 
@@ -162,6 +206,8 @@ final class AppModel {
             "judge_available": judgeAvailable ? 1 : 0,
             "moves_today": breaks.moves(on: today.day),
             "moves_7d": breaks.moves(since: weekAgo),
+            "productive_percent_today": share.percent ?? -1,
+            "auto_rules": rules.rules.filter { $0.source == .auto }.count,
         ]
     }
 
@@ -171,47 +217,63 @@ final class AppModel {
 
     var mood: Mood { Mood(used: totals.procrastination, limitMinutes: limit.current) }
 
-    var readout: String { Readout.short(seconds: totals.procrastination, limitMinutes: limit.current) }
+    /// The main metric across devices: 100% minus the share of waste.
+    var share: ProductiveShare { ledger.share(for: today.day) }
 
-    /// The menu bar text and its colour. During focus: the tree stage and the minutes left.
-    /// A 🚶 follows while a move is due.
+    /// The menu bar text and its colour: the mood for the limit, then the productive share
+    /// ("😄 92%", "😄 —" before 15 active minutes). During focus: the tree stage and the
+    /// minutes left. A 🚶 follows while a move is due.
     var menuBar: (text: String, tint: Tint?) {
         if let focus, focus.state == .growing {
             let minutes = Int((focus.remaining(at: clock) / 60).rounded(.up))
             return ("\(focus.stage(at: clock)) \(minutes)m", nil)
         }
-        return (breaks.wantsMark(at: clock) ? "\(readout) 🚶" : readout, mood.tint)
+        let text = "\(mood.emoji) \(share.text)"
+        return (breaks.wantsMark(at: clock) ? "\(text) 🚶" : text, mood.tint)
     }
 
-    func seconds(of device: Device) -> (procrastination: Int, productive: Int, focus: Int)? {
-        ledger.days[Ledger.key(today.day, device)].map { ($0.procrastination, $0.productive, $0.focus) }
-    }
-
-    /// Today's procrastination by site or app, largest first.
-    var topDistractions: [(label: String, seconds: Int)] {
+    /// Today's Mac seconds in `bucket` by site or app, largest first.
+    func top(_ bucket: Bucket, count: Int = 5) -> [(label: String, seconds: Int)] {
         var sums: [String: Int] = [:]
-        for s in sessions where s.guess == .procrastination {
+        for s in sessions where s.guess == bucket {
             sums[SiteKey.label(s.sample.sample), default: 0] += s.seconds
         }
-        return sums.sorted { $0.value > $1.value }.prefix(3).map { ($0.key, $0.value) }
+        return sums.sorted { $0.value > $1.value || ($0.value == $1.value && $0.key < $1.key) }
+            .prefix(count).map { ($0.key, $0.value) }
     }
 
-    /// The three largest groups of unclear sessions.
-    var reviewItems: [ReviewItem] {
+    /// Vago's calls today: places the AI judged or was unsure about, grouped by site or app,
+    /// largest first. Rule and answer sessions are not calls; corrected ones stay, marked.
+    var calls: [CallItem] {
         let pending = Set(reviewPending)
-        var groups: [String: ReviewItem] = [:]
+        var groups: [String: CallItem] = [:]
         var best: [String: Int] = [:]
-        for s in sessions where pending.contains(s.id) {
+        for s in sessions where !CallReason.isSettled(s.reason) {
             let o = s.sample.sample
             let key = SiteKey.of(o)
-            var item = groups[key] ?? ReviewItem(id: key, sample: o, label: SiteKey.label(o), seconds: 0, reason: s.reason, sessionIDs: [])
+            var item = groups[key] ?? CallItem(id: key, sample: o, label: SiteKey.label(o), seconds: 0, bucket: s.guess,
+                                               reason: s.reason, unsure: false, corrected: false, sessionIDs: [])
             item.seconds += s.seconds
             item.sessionIDs.append(s.id)
-            if s.seconds > best[key, default: -1] { best[key] = s.seconds; item.sample = o; item.reason = s.reason }
+            if pending.contains(s.id) { item.unsure = true }
+            if s.reason == CallReason.corrected { item.corrected = true }
+            if s.seconds > best[key, default: -1] {
+                best[key] = s.seconds
+                item.sample = o
+                item.bucket = s.guess
+                if s.reason != CallReason.corrected { item.reason = s.reason }
+            }
             groups[key] = item
         }
-        return groups.values.sorted { $0.seconds > $1.seconds }.prefix(3).map { $0 }
+        return groups.values.sorted { $0.seconds > $1.seconds }.prefix(8).map { item in
+            var item = item
+            if item.corrected { item.unsure = false }
+            return item
+        }
     }
+
+    /// Custom rules Vago learned: from corrections (`.review`) and from sure verdicts (`.auto`).
+    var learnedRuleCount: Int { rules.rules.filter { $0.source == .review || $0.source == .auto }.count }
 
     var focusSecondsToday: Int {
         (focusLog + (focus.map { [$0] } ?? []))
@@ -238,6 +300,27 @@ final class AppModel {
         launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 
+    /// Removes every learned rule (corrections and `.auto` rules) and starts verdict memory over.
+    /// The owner's own rules and the built-ins stay.
+    func forgetLearnedRules() {
+        rules = RuleBook(custom: rules.customRules.filter { $0.source == .user })
+        verdictMemory = VerdictMemory()
+        let book = rules, classifier = self.classifier
+        Task { await classifier.update(rules: book) }
+        dirty = true
+        flush(now: Date())
+        onChange?()
+    }
+
+    /// Hands today's `JudgeAudit` answer to the classifier: at launch, at day start, after a
+    /// correction, and when the classifier is rebuilt.
+    func applyJudgeTrust() {
+        let trusted = judgeAudit.trusted(on: today.day)
+        if judgeHeld == trusted { judgeHeld = !trusted }
+        let classifier = self.classifier
+        Task { await classifier.setJudgeTrusted(trusted) }
+    }
+
     func noteAutomation(_ bundleID: String, _ state: AutomationState) {
         if automation[bundleID] != state { automation[bundleID] = state }
     }
@@ -248,6 +331,7 @@ final class AppModel {
         guard available != judgeAvailable else { return }
         judgeAvailable = available
         classifier = Classifier(rules: rules, judge: FoundationModelsJudge.makeIfAvailable(), goals: goals)
+        applyJudgeTrust()
     }
 
     func markOnboarded() {

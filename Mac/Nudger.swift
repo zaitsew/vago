@@ -3,16 +3,18 @@ import VagoKit
 
 /// Decides when to ask "Work or scroll?" and shows the floating panel.
 ///
-/// Two cases: the front place is ambiguous, the classifier could only guess, and the owner has not
-/// answered for it today; or the owner hits a distraction during a focus session. Never more than
-/// one nudge per site in 10 minutes. Answers are held by the model for the rest of the day.
+/// Vago decides on its own, so it asks rarely. Two cases: the front place is ambiguous, the
+/// classifier is unsure, and the owner has stayed on it for a minute (at most once per place per
+/// day); or the owner hits a distraction during a focus session (at most once per site in 10
+/// minutes). Answers are held by the model for the rest of the day.
 @MainActor
 final class Nudger {
     static let cooldown: TimeInterval = 10 * 60
-    static let dwellSeconds: TimeInterval = 5
+    static let dwellSeconds: TimeInterval = 60
 
     private let panel = NudgePanel()
     private var lastShown: [String: Date] = [:]
+    private var askedToday: Set<String> = []
     private var dwellKey: String?
     private var dwellSince = Date()
     private let answer: @MainActor (String, Bucket) -> Void
@@ -28,12 +30,12 @@ final class Nudger {
             if panel.tag == "nudge" { panel.close() }  // the owner has moved on
         }
         guard !answered, !panel.isShowing else { return }
-        if let last = lastShown[key], now.timeIntervalSince(last) < Self.cooldown { return }
 
         let growing = focus?.state == .growing
-        if c.unclear {
-            // Ambiguous and the classifier could not tell. Wait a few seconds so a passing tab does not ask.
-            guard growing || now.timeIntervalSince(dwellSince) >= Self.dwellSeconds else { return }
+        if c.ambiguous && c.unclear {
+            // Ambiguous and unsure: ask once a day, after a minute on the place, never for a passing tab.
+            guard !askedToday.contains(key), now.timeIntervalSince(dwellSince) >= Self.dwellSeconds else { return }
+            askedToday.insert(key)
             lastShown[key] = now
             let title = growing ? "\(focus?.stage(at: now) ?? "🌱") at risk — work or scroll?" : "Work or scroll?"
             panel.show(title: title, subtitle: label, buttons: [
@@ -42,6 +44,7 @@ final class Nudger {
             ])
         } else if growing, c.bucket == .procrastination {
             // A clear distraction in the middle of a focus session: the first second is enough.
+            if let last = lastShown[key], now.timeIntervalSince(last) < Self.cooldown { return }
             lastShown[key] = now
             panel.show(title: "\(focus?.stage(at: now) ?? "🌱") at risk — back to work?", subtitle: label, buttons: [
                 .init(title: "Back to work", prominent: true) {},
@@ -84,5 +87,9 @@ final class Nudger {
         if panel.tag == "break" { panel.close() }
     }
 
-    func forgetDay() { lastShown = [:] }
+    /// A new day: every place may be asked once again.
+    func forgetDay() {
+        lastShown = [:]
+        askedToday = []
+    }
 }
