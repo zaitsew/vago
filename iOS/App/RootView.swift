@@ -5,6 +5,15 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
+        if ProcessInfo.onMac {
+            // Screen Time cannot count here, and nothing may be written from here (MacNoticeView).
+            MacNoticeView()
+        } else {
+            counting
+        }
+    }
+
+    private var counting: some View {
         Group {
             if model.onboarded && model.authorized {
                 MainTabs()
