@@ -94,9 +94,10 @@ extension AppModel {
     }
 
     /// Extends the open session while the owner stays on the same place with the same verdict
-    /// and the same certainty, so every call reaches "Vago's calls". Neutral by rule is not kept.
+    /// and the same certainty, so every call reaches "Vago's calls". Neutral by rule is not kept;
+    /// neutral by fallback is, so "Wrong?" can still move it.
     private func record(_ obs: ActivitySample, key: String, classification c: Classification, seconds: Int, now: Date) {
-        guard c.bucket != .neutral || c.unclear || c.source == .judge else { currentSession = nil; return }
+        guard c.bucket != .neutral || c.unclear || c.source != .rule else { currentSession = nil; return }
         if let open = currentSession, open.key == key, sessions.indices.contains(open.index),
            sessions[open.index].guess == c.bucket,
            reviewPending.contains(sessions[open.index].id) == c.unclear,
@@ -225,6 +226,7 @@ extension AppModel {
     /// the hours they happened, and the judge's hold lifted for today (`JudgeAudit`).
     private func correct(sample: ActivitySample, key: String, sessionIDs: [UUID], as bucket: Bucket) {
         rules.learn(from: sample, bucket: bucket)
+        if overrides[key] != nil { overrides[key] = bucket }
         let book = rules, classifier = self.classifier
         Task { await classifier.update(rules: book) }
         settle(sessionIDs, as: bucket)
