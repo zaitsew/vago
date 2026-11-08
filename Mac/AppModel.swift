@@ -149,8 +149,8 @@ final class AppModel {
     func adopt(remote day: DeviceDay) {
         if day.device == .mac, day.day == today.day {
             // The same Mac's own value, e.g. after state.json was lost: keep the larger one.
-            let remoteTotal = day.procrastination + day.productive + day.focus
-            if remoteTotal > today.procrastination + today.productive + today.focus { today = day }
+            let remoteTotal = day.procrastination + day.productive + day.neutral + day.focus
+            if remoteTotal > today.procrastination + today.productive + today.neutral + today.focus { today = day }
         }
         ledger.merge(day)
         dirty = true

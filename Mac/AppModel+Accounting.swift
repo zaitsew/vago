@@ -249,25 +249,13 @@ extension AppModel {
         for i in sessions.indices where set.contains(sessions[i].id) {
             let s = sessions[i]
             if s.guess != bucket {
-                move(s, from: s.guess == .ambiguous ? .procrastination : s.guess, to: bucket)
+                let from: Bucket = s.guess == .ambiguous ? .procrastination : s.guess
+                today.move(s.seconds, from: from, to: bucket, startingAt: s.start)
                 sessions[i].guess = bucket
             }
             sessions[i].reason = CallReason.corrected
         }
         currentSession = nil
-    }
-
-    /// Moves a session's seconds hour by hour, so a stretch across 15:00 leaves both slots right.
-    private func move(_ s: Session, from: Bucket, to: Bucket) {
-        var at = s.start
-        var left = s.seconds
-        while left > 0 {
-            let hourEnd = Calendar.current.dateInterval(of: .hour, for: at)?.end ?? at.addingTimeInterval(Double(left))
-            let chunk = min(left, max(1, Int(hourEnd.timeIntervalSince(at).rounded(.up))))
-            today.move(chunk, from: from, to: to, at: at)
-            left -= chunk
-            at = at.addingTimeInterval(Double(chunk))
-        }
     }
 }
 

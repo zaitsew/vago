@@ -14,6 +14,8 @@ targetTemplates:
     settings:
       base:
         TARGETED_DEVICE_FAMILY: "1"
+        # Build number of the iPhone targets; project.yml's value (1) is shared with the Mac app.
+        CURRENT_PROJECT_VERSION: "2"
         SDKROOT: iphoneos
         SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
         GENERATE_INFOPLIST_FILE: NO
@@ -242,6 +244,8 @@ targets:
       properties:
         com.apple.security.application-groups:
           - group.com.zaitsew.vago
+        # The widget reads the Mac's day from iCloud itself (same container as the app).
+        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.zaitsew.vago
 
 schemes:
   Vago:
