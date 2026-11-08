@@ -3,7 +3,7 @@
 An AI-native focus app for iPhone and Mac. Vago counts the minutes you lose to procrastination
 and the minutes you work, on every device, and shows them live: `😄 4m` in the Mac menu bar, and
 on the iPhone a Today screen with the day's productive share and hour-by-hour strip, widgets and
-a Live Activity. The daily limit adapts like Garmin's step goal and
+a Live Activity, and on the Mac a desktop widget with the same share and a strip per device. The daily limit adapts like Garmin's step goal and
 walks you down to 30 minutes a day.
 
 - **Smart buckets**: productive, neutral, procrastination and ambiguous. Instagram can be work.
