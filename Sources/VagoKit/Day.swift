@@ -37,3 +37,21 @@ public struct DayKey: Codable, Hashable, Comparable, Sendable {
         return DayKey(id: String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0))
     }
 }
+
+extension DayKey {
+    /// Hours in a day. A day always has 24 hour slots; a daylight-saving change folds into them.
+    public static let hoursPerDay = 24
+
+    /// The hour slot of `date` inside its day: 0 is 04:00–04:59, 20 is 00:00–00:59, 23 is 03:00–03:59.
+    public static func hourSlot(of date: Date, calendar: Calendar = .current) -> Int {
+        var gregorian = Calendar(identifier: .gregorian)
+        gregorian.timeZone = calendar.timeZone
+        let hour = gregorian.component(.hour, from: date)
+        return (hour - rolloverHour + hoursPerDay) % hoursPerDay
+    }
+
+    /// The clock hour (0–23) a slot starts at: slot 0 is 4, slot 20 is 0.
+    public static func clockHour(ofSlot slot: Int) -> Int {
+        (slot + rolloverHour) % hoursPerDay
+    }
+}

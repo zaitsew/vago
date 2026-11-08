@@ -51,7 +51,7 @@ public struct Rule: Codable, Sendable, Equatable, Identifiable {
     public var pathPrefix: String?       // "/direct"
     public var titleContains: String?    // case-insensitive
     public var bucket: Bucket
-    public var source: Source            // .builtIn, .user, .review
+    public var source: Source            // .builtIn, .user, .review, .auto
     public func matches(_ o: ActivitySample) -> Bool
 }
 
@@ -62,20 +62,37 @@ public struct RuleBook: Codable, Sendable {
     public mutating func learn(from o: ActivitySample, bucket: Bucket)  // nightly review answer → a .review rule (host+path for web, bundle+title word for apps)
 }
 
-/// The AI judge for ambiguous observations. The Mac app supplies the FoundationModels
+/// What the judge sees besides the page: the hour, time in front, the place before, ambiguous or unknown.
+public struct JudgeContext: Sendable, Equatable { public var hour: Int?; public var secondsInFront: Int; public var previous: String?; public var ambiguous: Bool }
+
+/// The AI judge for places no rule settles. The Mac app supplies the FoundationModels
 /// implementation; tests supply a stub.
 public protocol Judge: Sendable {
-    func judge(_ o: ActivitySample, goals: String) async -> Verdict?
+    func judge(_ o: ActivitySample, goals: String, context: JudgeContext) async -> Verdict?
 }
 public struct Verdict: Codable, Sendable, Equatable { public var bucket: Bucket; public var confidence: Double; public var reason: String }
 
-/// Classifier = rules, then the day cache, then the judge. A verdict under 0.6 confidence,
-/// or no judge, counts as procrastination and is queued for review (`unclear == true`).
+/// Classifier = rules, then the day cache, then the judge (docs/PRODUCT.md, "Vago decides").
+/// A rule always wins. Ambiguous and unknown places go to the judge. A verdict at 0.7 or more
+/// decides; a weaker one, or none, is neutral and `unclear`. No judge: ambiguous is
+/// procrastination (unclear), unknown is neutral. `setJudgeTrusted(false)` turns "work" verdicts
+/// on ambiguous places into neutral.
 public actor Classifier {
     public init(rules: RuleBook, judge: Judge?, goals: String)
-    public func classify(_ o: ActivitySample) async -> Classification
+    public func classify(_ o: ActivitySample, context: JudgeContext = .init()) async -> Classification
+    public func update(rules: RuleBook), update(goals: String), setJudgeTrusted(_: Bool)
 }
-public struct Classification: Sendable, Equatable { public var bucket: Bucket; public var unclear: Bool; public var reason: String }
+public struct Classification: Sendable, Equatable {
+    public var bucket: Bucket; public var unclear: Bool; public var reason: String
+    public var source: Source            // .rule, .answer, .judge, .fallback
+    public var ambiguous: Bool           // a rule called the place ambiguous
+    public var confidence: Double?; public var verdict: Bucket?   // the judge's sure answer, even when held
+}
+
+/// The guard against "it's all research", and the rules learned from sure verdicts.
+public struct JudgeAudit: Codable, Sendable { public mutating func record(_ c: Classification, seconds: Int, day: DayKey); public mutating func corrected(on: DayKey); public func trusted(on: DayKey) -> Bool }
+public struct VerdictMemory: Codable, Sendable { public mutating func note(_ o: ActivitySample, _ c: Classification, day: DayKey) -> Rule? }   // an .auto rule after 3 sure days
+extension RuleBook { public mutating func adopt(_ rule: Rule) }   // .auto rules go behind the owner's rules
 
 /// A 04:00-to-04:00 day.
 public struct DayKey: Codable, Hashable, Comparable, Sendable {
@@ -90,8 +107,19 @@ public struct DeviceDay: Codable, Sendable, Equatable {
     public var procrastination: Int
     public var productive: Int
     public var focus: Int
+    public var neutral: Int                       // 0 on the iPhone and in older values
     public var updatedAt: Date
+    public var productiveByHour, procrastinationByHour, neutralByHour: [Int]   // 24 slots from 04:00; empty in older values
+    public mutating func add(_ bucket: Bucket, seconds: Int, at: Date)          // total and hour slot
+    public mutating func move(_ seconds: Int, from: Bucket, to: Bucket, at: Date) -> Int   // a corrected call
+    public var hours: [HourSlot]
 }
+public struct HourSlot { public var slot, productive, procrastination, neutral: Int; public var clockHour: Int }
+extension DayKey { public static func hourSlot(of: Date) -> Int; public static func clockHour(ofSlot: Int) -> Int }
+
+/// The main number (docs/PRODUCT.md): 100 − procrastination / (productive + neutral + procrastination).
+public struct ProductiveShare { public var percent: Int? /* nil below 15 active minutes */; public var text: String; public var tint: Tint? }
+extension Ledger { public func share(for: DayKey, devices: [Device] = .allCases) -> ProductiveShare; public func hours(for: DayKey, devices: [Device] = .allCases) -> [HourSlot] }
 
 /// Sessions the nightly review asks about. The Mac appends; both apps show the top three.
 public struct Session: Codable, Sendable, Identifiable, Equatable {
