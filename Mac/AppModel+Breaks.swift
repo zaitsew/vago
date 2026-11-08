@@ -9,9 +9,17 @@ extension AppModel {
     /// A due reminder waits for an app switch, at most this long.
     static let breakSwitchWaitSeconds: TimeInterval = 3 * 60
 
+    /// When someone last touched the Mac. The tracker keeps counting for 2 minutes without input,
+    /// but a break is 5 minutes from the last input, not from the last counted second. On video
+    /// pages, where watching needs no input, the counted second is the activity.
+    static func lastInput(for obs: ActivitySample, now: Date) -> Date {
+        guard Presence.idleThreshold(for: obs) <= Presence.idleSeconds else { return now }
+        return now.addingTimeInterval(-min(Presence.secondsSinceInput(), Presence.idleSeconds))
+    }
+
     /// Someone used the Mac during the second ending at `now`, in the place `key`.
-    func noteBreakActivity(key: String, now: Date) {
-        breaks.active(at: now)
+    func noteBreakActivity(key: String, lastInput: Date, now: Date) {
+        breaks.active(at: lastInput)
         let switched = breakLastKey != nil && breakLastKey != key
         breakLastKey = key
         considerBreak(now: now, switched: switched)
@@ -20,9 +28,10 @@ extension AppModel {
     /// Decides whether the panel shows now. Held during focus and while the microphone is in use,
     /// then for a minute after. Shown at an app switch, or after 3 minutes of waiting for one.
     func considerBreak(now: Date, switched: Bool) {
+        // Focus is tracked every second, so a session that ends at the threshold still gets its minute.
+        if focus?.state == .growing { breakHeldUntil = now.addingTimeInterval(Self.breakGraceSeconds) }
         guard breaks.wantsPanel(at: now) else { breakDueSince = nil; return }
-        let busy = focus?.state == .growing || Microphone.inUse()
-        if busy {
+        if focus?.state == .growing || Microphone.inUse() {
             breakHeldUntil = now.addingTimeInterval(Self.breakGraceSeconds)
             return
         }

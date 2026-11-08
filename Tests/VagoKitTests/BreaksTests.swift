@@ -112,6 +112,13 @@ struct BreaksTests {
         #expect(c.log.isEmpty)
     }
 
+    @Test func anOlderInputTimeNeverMovesTheStreakBack() {
+        var c = coach(minutes: 10)
+        c.active(at: t(8))                                            // last input two minutes ago
+        #expect(c.lastActive == t(10))
+        #expect(c.streakStart == start)
+    }
+
     @Test func disabledIsNeverDue() {
         var c = coach(minutes: 120)
         c.enabled = false
