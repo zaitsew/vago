@@ -183,4 +183,16 @@ struct ClassifierTests {
         #expect(await judge.calls == 2)
         #expect(await judge.lastGoals == "learn Spanish")
     }
+
+    @Test func aVerdictAskedUnderOldGoalsIsNotCached() async {
+        let judge = StubJudge(workVerdict, delay: .milliseconds(80))
+        let c = make(judge)
+        let o = reel
+        let first = Task { await c.classify(o) }
+        try? await Task.sleep(for: .milliseconds(20))
+        await c.update(goals: "learn Spanish")
+        _ = await first.value
+        _ = await c.classify(o)
+        #expect(await judge.calls == 2)
+    }
 }

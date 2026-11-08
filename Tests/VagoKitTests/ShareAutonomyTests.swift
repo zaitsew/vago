@@ -34,6 +34,16 @@ struct HoursShareTests {
         #expect(d.neutral == 0 && d.procrastination == 120 && d.hours[6].procrastination == 120 && d.hours[6].neutral == 0)
     }
 
+    @Test func aCorrectionSpanningTwoHoursMovesEachPart() {
+        var d = DeviceDay(day: day, device: .mac, updatedAt: at("2026-11-08 10:00"))
+        d.add(.neutral, seconds: 600, at: at("2026-11-08 10:55"), calendar: utc)
+        d.add(.neutral, seconds: 600, at: at("2026-11-08 11:05"), calendar: utc)
+        let moved = d.move(1200, from: .neutral, to: .procrastination, startingAt: at("2026-11-08 10:50"), calendar: utc)
+        #expect(moved == 1200)
+        #expect(d.hours[6].procrastination == 600 && d.hours[7].procrastination == 600)
+        #expect(d.hours[6].neutral == 0 && d.hours[7].neutral == 0)
+    }
+
     @Test func oldValuesDecodeWithoutHours() throws {
         let json = #"{"day":{"id":"2026-11-01"},"device":"iphone","procrastination":60,"productive":120,"focus":0,"updatedAt":"2026-11-01T10:00:00Z"}"#
         let d = try #require(DeviceDay(encoded: Data(json.utf8)))

@@ -90,6 +90,26 @@ public struct DeviceDay: Codable, Sendable, Equatable {
         return moved
     }
 
+    /// Moves a corrected session that started at `start` and lasted `seconds`, hour by hour,
+    /// so a 10:50–11:10 session moves 10 minutes in each hour slot. Returns the seconds moved.
+    @discardableResult
+    public mutating func move(_ seconds: Int, from: Bucket, to: Bucket, startingAt start: Date, calendar: Calendar = .current) -> Int {
+        var gregorian = Calendar(identifier: .gregorian)
+        gregorian.timeZone = calendar.timeZone
+        var cursor = start
+        var left = seconds
+        var moved = 0
+        while left > 0 {
+            let hourStart = gregorian.dateInterval(of: .hour, for: cursor)?.start ?? cursor
+            let nextHour = hourStart.addingTimeInterval(3600)
+            let chunk = max(1, min(left, Int(nextHour.timeIntervalSince(cursor).rounded(.up))))
+            moved += move(chunk, from: from, to: to, at: cursor, calendar: calendar)
+            left -= chunk
+            cursor = nextHour
+        }
+        return moved
+    }
+
     private subscript(total bucket: Bucket) -> Int {
         get {
             switch bucket {
@@ -198,8 +218,8 @@ public struct Ledger: Codable, Sendable {
         if let existing = days[key] {
             if existing.updatedAt > other.updatedAt { return }
             if existing.updatedAt == other.updatedAt
-                && (existing.procrastination, existing.productive, existing.focus)
-                    >= (other.procrastination, other.productive, other.focus) { return }
+                && (existing.procrastination, existing.productive, existing.focus, existing.neutral)
+                    >= (other.procrastination, other.productive, other.focus, other.neutral) { return }
         }
         days[key] = other
     }

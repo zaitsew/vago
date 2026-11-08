@@ -182,7 +182,7 @@ extension AppModel {
         for i in sessions.indices where set.contains(sessions[i].id) && sessions[i].guess != bucket {
             let s = sessions[i]
             let from: Bucket = s.guess == .ambiguous ? .procrastination : s.guess
-            today.move(s.seconds, from: from, to: bucket, at: s.start)
+            today.move(s.seconds, from: from, to: bucket, startingAt: s.start)
             sessions[i].guess = bucket
         }
     }
