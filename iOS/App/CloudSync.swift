@@ -13,6 +13,8 @@ enum CloudSync {
 
     /// Writes every iPhone day in the ledger that iCloud does not have yet or has older.
     static func push(_ ledger: Ledger, today: DayKey) {
+        // On a Mac this build counts nothing: its empty iPhone day would replace the real one.
+        guard !ProcessInfo.onMac else { return }
         for value in ledger.days.values where value.device == .iphone {
             let key = Ledger.key(value.day, .iphone)
             if let stored = store.object(forKey: key).flatMap({ DeviceDay(encoded: $0) }),
