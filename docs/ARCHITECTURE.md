@@ -242,8 +242,28 @@ The app learns usage only from thresholds the system reports to the monitor exte
 - **Focus**: during a focus session the app shields procrastination and ambiguous apps. A
   `focus` activity's interval end lifts the shield. The minimum schedule length is 15 minutes,
   which fits 25 and 50.
-- **Widget and Live Activity**: the widget shows `Readout.short` and the mood tint. The monitor
-  extension reloads the widget's timeline at each threshold. The Live Activity is started
+- **Hours**: when the monitor applies a threshold (`DayCounters.apply`), the minutes it added
+  go into the hour slot of the moment the event arrived, as productive or procrastination
+  (ambiguous minutes follow the pass: work → productive, otherwise procrastination). The hour
+  lists live in `DayCounters` in the App Group, with defaults so older counters load, and
+  `VagoStore.publishToday` copies them into the iPhone `DeviceDay` next to the totals, which
+  also come from the counters, so totals and hours agree. A threshold that adds several minutes
+  (steps of 5 and 15 past 45 minutes) lands in the hour it was reported, not spread back over the
+  hours it covered. The iPhone has no neutral time.
+- **Today tab**: the hero is `Snapshot.share` (`ProductiveShare`, merged ledger) in large rounded
+  type tinted by its tint, with "work · neutral · waste" under it ("—" and "Building today's
+  picture" below 15 active minutes). Then the mood emoji with a bar of waste against the limit,
+  the day strip, the device lines (each with its own share) and the Focus card. `DayStrip`
+  (`iOS/SharedUI`) draws hour columns from the first to the last hour with data (at least
+  07:00 to 23:00), two lanes (Mac, iPhone), each cell a stacked bar work / neutral / waste;
+  a tap shows "14:00 · Mac 42m work · iPhone 11m waste". The caption says iPhone minutes lag
+  and when the Mac last wrote (`Snapshot.macUpdatedAt`).
+- **Widget and Live Activity**: the widget "Vago — today" shows the share, the mood and waste
+  against the limit (small), the share with the day strip and "updated hh:mm" (medium), and a
+  gauge, a bar or one line on the Lock Screen. Its timeline provider merges the Mac's day from
+  `NSUbiquitousKeyValueStore` itself (the widget has the app's key-value identifier,
+  `CloudRead`) and does not write the ledger back. The monitor extension reloads the widget's
+  timeline at each threshold. The Live Activity is started
   from the app; the extension updates it where ActivityKit allows. Background widget reloads
   have a daily budget, so the widget can lag a few minutes. That is a platform limit, measured
   on device and written in `docs/RELEASE.md`.

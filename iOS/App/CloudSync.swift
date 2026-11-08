@@ -30,15 +30,6 @@ enum CloudSync {
 
     /// Merges the Mac's days from the store. Returns whether the ledger changed.
     static func pull(into ledger: inout Ledger, today: DayKey) -> Bool {
-        store.synchronize()
-        let cutoff = today.adding(days: -VagoStore.ledgerDays)
-        var changed = false
-        for (key, raw) in store.dictionaryRepresentation where key.hasPrefix("day/") && key.hasSuffix("/mac") {
-            guard let day = DeviceDay(encoded: raw), day.device == .mac, day.day >= cutoff else { continue }
-            let before = ledger.days[Ledger.key(day.day, .mac)]
-            ledger.merge(day)
-            if ledger.days[Ledger.key(day.day, .mac)] != before { changed = true }
-        }
-        return changed
+        CloudRead.mergeMac(into: &ledger, today: today)
     }
 }

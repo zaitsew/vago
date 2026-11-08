@@ -172,7 +172,7 @@ struct VagoStore: @unchecked Sendable {
     func publishToday(now: Date = .now) -> DeviceDay {
         let day = DayKey.of(now)
         let counters = counters(for: day)
-        let value = DeviceDay(
+        var value = DeviceDay(
             day: day,
             device: .iphone,
             procrastination: counters.procrastinationSeconds,
@@ -180,28 +180,41 @@ struct VagoStore: @unchecked Sendable {
             focus: focusSeconds(on: day, now: now),
             updatedAt: now
         )
+        // The totals above come from the counters, and so do the hours: the monitor put each
+        // threshold's minutes in the hour it arrived (`DayCounters.apply`), the same split
+        // `DeviceDay.add` makes. The iPhone has no neutral time.
+        value.productiveByHour = counters.productiveByHour
+        value.procrastinationByHour = counters.procrastinationByHour
         // Unchanged numbers are not rewritten: the app calls this every few seconds.
-        if let stored = ledger().days[Ledger.key(day, .iphone)],
-           stored.procrastination == value.procrastination, stored.productive == value.productive,
-           stored.focus == value.focus {
-            return stored
+        if let stored = ledger().days[Ledger.key(day, .iphone)] {
+            var same = stored
+            same.updatedAt = value.updatedAt
+            if same == value { return stored }
         }
         merge(value)
         return value
     }
 
-    func snapshot(now: Date = .now) -> Snapshot {
+    /// Today across devices. `ledger` is the merged ledger when the caller has one (the widget
+    /// adds the Mac's day from iCloud); the stored ledger otherwise.
+    func snapshot(now: Date = .now, ledger merged: Ledger? = nil) -> Snapshot {
         let day = DayKey.of(now)
-        let ledger = ledger()
+        let ledger = merged ?? ledger()
         let total = ledger.total(for: day)
+        let iphone = ledger.days[Ledger.key(day, .iphone)]
+        let mac = ledger.days[Ledger.key(day, .mac)]
         return Snapshot(
             day: day,
             procrastination: total.procrastination,
             productive: total.productive,
             focus: total.focus,
-            iphone: ledger.days[Ledger.key(day, .iphone)],
-            mac: ledger.days[Ledger.key(day, .mac)],
-            limitMinutes: limit().current
+            iphone: iphone,
+            mac: mac,
+            limitMinutes: limit().current,
+            share: ledger.share(for: day),
+            macHours: ledger.hours(for: day, devices: [.mac]),
+            iphoneHours: ledger.hours(for: day, devices: [.iphone]),
+            macUpdatedAt: mac?.updatedAt
         )
     }
 }
@@ -215,15 +228,25 @@ struct Snapshot: Equatable, Sendable {
     var iphone: DeviceDay?
     var mac: DeviceDay?
     var limitMinutes: Int
+    /// The main number: productive share across devices (`—` below 15 active minutes).
+    var share = ProductiveShare(productive: 0, procrastination: 0)
+    /// 24 hour slots per device, slot 0 = 04:00.
+    var macHours: [HourSlot] = []
+    var iphoneHours: [HourSlot] = []
+    /// When the Mac's value was last written (its own clock).
+    var macUpdatedAt: Date?
 
     var mood: Mood { Mood(used: procrastination, limitMinutes: limitMinutes) }
     var readout: String { Readout.short(seconds: procrastination, limitMinutes: limitMinutes) }
     var minutesUsed: Int { procrastination / 60 }
 
-    /// Used share of the limit, 0...1+ (a ring fills to 1 and then stays full).
-    var share: Double {
+    /// Used share of the limit, 0...1+ (a bar fills to 1 and then stays full).
+    var limitFill: Double {
         limitMinutes > 0 ? Double(procrastination) / Double(limitMinutes * 60) : (procrastination > 0 ? 1 : 0)
     }
+
+    /// The latest time either device wrote its day.
+    var updatedAt: Date? { [iphone?.updatedAt, mac?.updatedAt].compactMap { $0 }.max() }
 }
 
 extension DayKey {

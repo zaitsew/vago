@@ -30,7 +30,9 @@ App Store Connect record: **Vago: Focus Timer**, app id `6828551197`, SKU `vago`
 `com.zaitsew.vago`, primary language English (U.S.), created 2026-10-29. The plain name "Vago"
 was taken on the store.
 
-First build: 0.1.0 (1), uploaded 2026-10-29. Testers: the internal group "Team" (created through
+First build: 0.1.0 (1), uploaded 2026-10-29. The next build is 0.1.0 (2): the day view, hour
+strip and the new widget. The iPhone targets set `CURRENT_PROJECT_VERSION` in `ios.yml`; the
+shared value in `project.yml` stays at 1 for the Mac app. Testers: the internal group "Team" (created through
 the API, access to all builds, no beta review) with the owner's tester account. `testflight beta
 group` only makes external groups, which need beta review.
 
@@ -47,6 +49,22 @@ xcodegen generate
 Release archives sign manually with Apple Distribution and the `<bundle id> AppStore` profiles
 (`ios.yml`). After any App ID capability change, recreate them with
 `~/ops/bin/testflight bootstrap --refresh-profiles` and the six `--bundle-id` values above.
+
+### Widget reads iCloud (build 2)
+
+The widget extension has the `com.apple.developer.ubiquity-kvstore-identifier` entitlement with
+the app's identifier (`$(TeamIdentifierPrefix)com.zaitsew.vago`), so its timeline provider reads
+the Mac's day from iCloud itself instead of waiting for the app to open. Before the first
+upload with it, enable iCloud (key-value storage) on the App ID `com.zaitsew.vago.widgets` in
+the developer website, then refresh the profiles:
+
+```
+~/ops/bin/testflight bootstrap --refresh-profiles --bundle-id com.zaitsew.vago.widgets
+```
+
+Without the capability the archive fails to sign. If the capability is not wanted, remove the
+entitlement from `ios.yml` and `iOS/Widgets/VagoWidgets.entitlements`; the widget then shows the
+Mac's minutes as of the last time the app ran.
 
 ### Family Controls (Distribution)
 
@@ -68,7 +86,7 @@ cannot set Family Controls or App Group membership):
 | `com.zaitsew.vago.shield` | VagoShield | Development + Distribution | yes | no |
 | `com.zaitsew.vago.shieldaction` | VagoShieldAction | Development + Distribution | yes | no |
 | `com.zaitsew.vago.report` | VagoReport | Development + Distribution | yes | no |
-| `com.zaitsew.vago.widgets` | VagoWidgets | no | yes | no |
+| `com.zaitsew.vago.widgets` | VagoWidgets | no | yes | yes (key-value store, from build 2) |
 
 ## Platform limits
 
@@ -94,6 +112,11 @@ These come from Apple's Screen Time API, not from Vago. They are the reason the 
   minutes. A pass ends at 15 (Work) or 5 (Scroll) minutes of use, or after 60 minutes,
   whichever comes first. If starting the pass monitoring fails, the shield stays on rather than
   leaving an open door.
+- **Widget content.** "Vago — today": the productive share (small, medium and Lock Screen
+  families), the waste against the limit, and in the medium size the day strip (Mac and iPhone
+  lanes by hour) with "updated hh:mm". The provider merges the Mac's day from iCloud on every
+  refresh. iCloud key-value sync is not instant either, so the Mac's lane can trail the Mac by
+  a few minutes.
 - **Widget reloads.** The monitor asks WidgetKit to reload the timeline at every threshold, but
   the system budgets background reloads per day and may skip them. The widget also refreshes
   itself every 15 minutes. Expect it to lag a few minutes. This has to be measured on the
