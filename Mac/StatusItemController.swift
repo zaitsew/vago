@@ -2,12 +2,15 @@ import AppKit
 import SwiftUI
 import VagoKit
 
-/// The menu-bar item and the popover behind it.
+/// The menu-bar item, the popover behind it, and the Day and Settings windows it opens.
+/// Left click toggles the popover; right click shows a short menu.
 @MainActor
 final class StatusItemController: NSObject {
     private let model: AppModel
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
+    private lazy var settings = SettingsWindow.make(model: model)
+    private lazy var day = DayWindow.make(model: model)
     private var shown = ""
 
     init(model: AppModel) {
@@ -15,17 +18,19 @@ final class StatusItemController: NSObject {
         super.init()
         popover.behavior = .transient
         let host = NSHostingController(rootView: PopoverView(model: model))
-        host.sizingOptions = [.preferredContentSize]   // the popover follows the SwiftUI height
+        host.sizingOptions = [.preferredContentSize]   // the popover follows the fixed SwiftUI layout
         popover.contentViewController = host
         if let button = item.button {
             button.target = self
-            button.action = #selector(toggle(_:))
+            button.action = #selector(clicked(_:))
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
             button.setAccessibilityLabel("Vago")
         }
+        model.openWindow = { [weak self] window in self?.open(window) }
         update()
     }
 
-    /// Redraws the title: the readout tinted by mood, or the focus tree and minutes left.
+    /// Redraws the title: mood and share tinted by mood, or the focus tree and minutes left.
     func update() {
         let (text, tint) = model.menuBar
         let key = "\(text)|\(tint?.rawValue ?? "-")"
@@ -48,7 +53,36 @@ final class StatusItemController: NSObject {
         popover.contentViewController?.view.window?.makeKey()
     }
 
-    @objc private func toggle(_ sender: Any?) {
-        if popover.isShown { popover.performClose(sender) } else { showPopover() }
+    func open(_ window: AppWindow) {
+        popover.performClose(nil)
+        switch window {
+        case .day: day.show()
+        case .settings: settings.show()
+        }
     }
+
+    @objc private func clicked(_ sender: Any?) {
+        if NSApp.currentEvent?.type == .rightMouseUp {
+            showMenu()
+        } else if popover.isShown {
+            popover.performClose(sender)
+        } else {
+            showPopover()
+        }
+    }
+
+    private func showMenu() {
+        guard let button = item.button else { return }
+        popover.performClose(nil)
+        let menu = NSMenu()
+        menu.addItem(withTitle: "Day", action: #selector(openDay), keyEquivalent: "d").target = self
+        menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",").target = self
+        menu.addItem(.separator())
+        menu.addItem(withTitle: "Quit Vago", action: #selector(quit), keyEquivalent: "q").target = self
+        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height + 5), in: button)
+    }
+
+    @objc private func openDay() { open(.day) }
+    @objc private func openSettings() { open(.settings) }
+    @objc private func quit() { NSApp.terminate(nil) }
 }

@@ -74,9 +74,12 @@ Every second of foreground use falls in one bucket:
 - Colour: green from 90% (30 minutes of waste in a 5-hour day), yellow from 75%, red below.
 - The minutes of waste against the adaptive limit stay beside it: the share says whether the
   day aimed at the goals, the limit says whether scrolling stayed inside the budget.
+- On the Mac the menu bar reads `😄 92%` (the mood for the limit, then the share), and the
+  popover opens on the share in large type with the day's work, neutral and waste minutes.
 
 Every device keeps its seconds per hour slot (04:00, 05:00 … 03:00), so the day can be drawn
-as a timeline per device.
+as a timeline per device: the popover's day strip and the Mac's Day window show one lane per
+device, one stacked cell per hour.
 
 ## Vago decides, the owner corrects
 
@@ -90,7 +93,10 @@ as a timeline per device.
    with no verdict, the time is neutral: it does not move the share either way. Such calls are
    marked unsure.
 4. **Corrections, not reviews.** Vago does not wait for answers. Its calls for the day are
-   listed with the AI's reason; one tap corrects one, moves its minutes, and becomes a rule.
+   listed in the Mac's Day window ("Vago's calls") with the AI's reason; one tap corrects one,
+   moves its minutes, and becomes a rule. The popover's **Wrong?** does the same for the place
+   in front. On the Mac, "Work or scroll?" is asked only for a mixed place Vago is unsure about
+   after a minute on it, at most once per place per day.
 5. **Learned rules.** The same sure verdict (0.85 or more) on a place nothing knew, on three
    different days, becomes a rule. Never for an ambiguous place: three good YouTube days must
    not make all of YouTube work.
@@ -156,7 +162,8 @@ Like Garmin's auto step goal, but the limit moves down:
   unanswered panels it stops for this streak; only 🚶 stays in the menu bar. It never grows louder.
 - It waits during a focus session and while the microphone is in use (a call), then one more
   minute, then until the next app switch (at most 3 minutes).
-- The popover shows the time since the last break, today's moves, and **Not today**.
+- The popover shows the time since the last break and today's moves; when a move is due it
+  names the move with **Done** and **Later** (and **Not today** in Later's menu).
 - No Iron U link yet: Iron U has no way to log a workout from another app, and a jump to another
   app is where a break gets dropped. Revisit when Iron U can take a logged move.
 

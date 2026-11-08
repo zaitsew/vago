@@ -14,9 +14,9 @@ struct PersistedState: Codable, Sendable {
     var ledger = Ledger()
     /// This Mac's totals for the current day (also merged into `ledger`).
     var today: DeviceDay?
-    /// Today's non-neutral stretches of use, newest last.
+    /// Today's stretches of use the classifier did not settle as neutral by rule, newest last.
     var sessions: [Session] = []
-    /// Ids in `sessions` that the classifier guessed at and the owner has not answered yet.
+    /// Ids in `sessions` the classifier was unsure about and the owner has not corrected.
     var reviewPending: [UUID] = []
     /// Day-scoped answers from the intent nudge, keyed by site or bundle id.
     var overrides: [String: Bucket] = [:]
@@ -26,6 +26,10 @@ struct PersistedState: Codable, Sendable {
     var focusLog: [FocusSession] = []
     /// The move reminder: the current streak at the Mac, its settings and the moves log.
     var breaks = BreakCoach()
+    /// The guard against "it's all research": sure verdicts on ambiguous places per day.
+    var judgeAudit = JudgeAudit()
+    /// Sure verdicts on places nothing knew, on the way to an `.auto` rule.
+    var verdictMemory = VerdictMemory()
 
     init() {}
 
@@ -45,11 +49,13 @@ struct PersistedState: Codable, Sendable {
         focus = try c.decodeIfPresent(FocusSession.self, forKey: .focus)
         focusLog = try c.decodeIfPresent([FocusSession].self, forKey: .focusLog) ?? []
         breaks = try c.decodeIfPresent(BreakCoach.self, forKey: .breaks) ?? BreakCoach()
+        judgeAudit = try c.decodeIfPresent(JudgeAudit.self, forKey: .judgeAudit) ?? JudgeAudit()
+        verdictMemory = try c.decodeIfPresent(VerdictMemory.self, forKey: .verdictMemory) ?? VerdictMemory()
     }
 
     private enum Keys: String, CodingKey {
         case onboarded, goals, customRules, limit, ledger, today, sessions, reviewPending
-        case overrides, overridesDay, focus, focusLog, breaks
+        case overrides, overridesDay, focus, focusLog, breaks, judgeAudit, verdictMemory
     }
 }
 
