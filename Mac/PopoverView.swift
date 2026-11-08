@@ -4,8 +4,25 @@ import VagoKit
 /// The window behind the menu-bar item.
 struct PopoverView: View {
     let model: AppModel
+    @State private var contentHeight: CGFloat = 0
+
+    /// The popover never grows past the screen: taller content scrolls instead of pushing the
+    /// top off the screen (an open Settings section did that).
+    private var maxHeight: CGFloat {
+        let screen = NSScreen.main?.visibleFrame.height ?? 800
+        return max(320, screen - 40)
+    }
 
     var body: some View {
+        ScrollView(.vertical) {
+            content
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .frame(width: 344, height: min(max(contentHeight, 1), maxHeight))
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 14) {
             Header(model: model)
             if !model.accessibilityGranted { AccessibilityCallout() }
@@ -18,7 +35,7 @@ struct PopoverView: View {
             SettingsSection(model: model)
         }
         .padding(16)
-        .frame(width: 344)
+        .frame(width: 344, alignment: .leading)
     }
 }
 

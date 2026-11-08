@@ -14,7 +14,9 @@ final class StatusItemController: NSObject {
         self.model = model
         super.init()
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: PopoverView(model: model))
+        let host = NSHostingController(rootView: PopoverView(model: model))
+        host.sizingOptions = [.preferredContentSize]   // the popover follows the SwiftUI height
+        popover.contentViewController = host
         if let button = item.button {
             button.target = self
             button.action = #selector(toggle(_:))
