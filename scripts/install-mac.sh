@@ -25,16 +25,19 @@ unset SDKROOT || true
 command -v xcodegen >/dev/null 2>&1 || { echo "xcodegen not installed — brew install xcodegen" >&2; exit 1; }
 
 PROFILE="com.zaitsew.vago.mac MacDev"
+# Entitlements and profile go through VAGO_MAC_* (read by the VagoMac target only): a command-line
+# CODE_SIGN_ENTITLEMENTS or PROVISIONING_PROFILE_SPECIFIER would reach the widget extension too.
 SIGN_ARGS=(CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=Apple Development")
+PROFILE_ARG=""
 if grep -rl "$PROFILE" ~/Library/MobileDevice/Provisioning\ Profiles ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles 2>/dev/null | grep -q .; then
   ENT=Mac/VagoMac-iCloud.entitlements
-  SIGN_ARGS+=("PROVISIONING_PROFILE_SPECIFIER=$PROFILE")
+  PROFILE_ARG="$PROFILE"
   SYNC="iCloud sync on"
 else
   ENT=Mac/VagoMac.entitlements
   SYNC="iCloud sync is OFF (no profile \"$PROFILE\"). Make it once: scripts/make-mac-profile.sh, then run this again."
 fi
-SIGN_ARGS+=("CODE_SIGN_ENTITLEMENTS=$ROOT/$ENT")
+SIGN_ARGS+=("VAGO_MAC_ENTITLEMENTS=$ROOT/$ENT" "VAGO_MAC_PROFILE=$PROFILE_ARG")
 
 # project.yml includes ios.yml. A checkout without it (the Mac branch alone) gets an empty
 # placeholder for the generation only.

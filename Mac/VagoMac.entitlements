@@ -4,5 +4,9 @@
 <dict>
 	<key>com.apple.security.automation.apple-events</key>
 	<true/>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>VWH2FKV78Q.com.zaitsew.vago</string>
+	</array>
 </dict>
 </plist>

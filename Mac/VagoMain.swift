@@ -44,6 +44,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// `vago://day` (the widget's tap) opens the Day window.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        guard urls.contains(where: { $0.scheme == "vago" && ($0.host ?? "") == "day" }) else { return }
+        NSApp.activate()
+        status?.open(.day)
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         tracker?.stop()
         model?.flush(force: true)

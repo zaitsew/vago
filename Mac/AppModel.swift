@@ -86,6 +86,9 @@ final class AppModel {
     @ObservationIgnored var dirty = false
     @ObservationIgnored var lastFlush = Date.distantPast
     @ObservationIgnored var lastUsageWrite = Date.distantPast
+    /// What the widget snapshot last held, for `writeWidgetSnapshot`'s throttle.
+    @ObservationIgnored var widgetLast: (day: DayKey?, percent: Int?, written: Date, reloaded: Date) =
+        (nil, nil, .distantPast, .distantPast)
     @ObservationIgnored var nudger: Nudger?
     @ObservationIgnored var sync: CloudSync?
     @ObservationIgnored var breakLastKey: String?
@@ -169,6 +172,7 @@ final class AppModel {
             sync?.write(today, force: force)
             lastUsageWrite = now
         }
+        writeWidgetSnapshot(now: now, force: force)
     }
 
     func snapshot() -> PersistedState {

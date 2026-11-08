@@ -12,6 +12,8 @@ targets:
     dependencies:
       - package: VagoKit
         product: VagoKit
+      - target: VagoMacWidgets
+        embed: true
     info:
       path: Mac/Info.plist
       properties:
@@ -21,6 +23,10 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         LSUIElement: true
+        # The widget's tap, vago://day, opens the Day window.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.zaitsew.vago.mac
+            CFBundleURLSchemes: [vago]
         LSApplicationCategoryType: public.app-category.productivity
         ITSAppUsesNonExemptEncryption: false
         NSHumanReadableCopyright: Vago
@@ -29,10 +35,53 @@ targets:
       base:
         PRODUCT_NAME: Vago
         PRODUCT_BUNDLE_IDENTIFIER: com.zaitsew.vago.mac
-        # install-mac.sh switches to Mac/VagoMac-iCloud.entitlements when the MacDev profile exists.
-        CODE_SIGN_ENTITLEMENTS: Mac/VagoMac.entitlements
+        # install-mac.sh switches to Mac/VagoMac-iCloud.entitlements and sets the profile when the
+        # MacDev profile exists. Both go through these app-only variables: a command-line
+        # CODE_SIGN_ENTITLEMENTS or PROVISIONING_PROFILE_SPECIFIER would reach the widget too.
+        VAGO_MAC_ENTITLEMENTS: Mac/VagoMac.entitlements
+        VAGO_MAC_PROFILE: ""
+        CODE_SIGN_ENTITLEMENTS: $(VAGO_MAC_ENTITLEMENTS)
+        PROVISIONING_PROFILE_SPECIFIER: $(VAGO_MAC_PROFILE)
         ENABLE_HARDENED_RUNTIME: YES
         ENABLE_APP_SANDBOX: NO
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+
+  # The desktop / Notification Center widget. Sandboxed; reads widget.json that the app writes
+  # into the App Group container. It shares three pure files with the app.
+  VagoMacWidgets:
+    type: app-extension
+    platform: macOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: MacWidgets
+        excludes:
+          - "*.entitlements"
+          - Info.plist
+      - Mac/WidgetSnapshot.swift
+      - Mac/DayStrip.swift
+      - Mac/Style.swift
+    dependencies:
+      - package: VagoKit
+        product: VagoKit
+    info:
+      path: MacWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Vago Widgets
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_NAME: VagoMacWidgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.zaitsew.vago.mac.widgets
+        CODE_SIGN_ENTITLEMENTS: MacWidgets/VagoMacWidgets.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_APP_SANDBOX: YES
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: complete

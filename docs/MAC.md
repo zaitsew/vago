@@ -87,6 +87,21 @@ minutes. For today it also lists:
 The arrows step through earlier days in the ledger. Past days show the share and the strip only;
 sessions are kept for the current day.
 
+## The desktop widget
+
+**Vago — today** (small and medium) goes on the desktop or in Notification Center: right click
+the desktop, Edit Widgets, Vago. It shows the productive share across devices in large type,
+tinted like the menu bar, the mood emoji, `3h 12m work · 40m waste` and "as of 14:32". The medium
+size adds the day strip with a Mac lane and an iPhone lane ("no iPhone data" when the iPhone has
+reported nothing today). Before 15 active minutes it reads "—" and "N min so far". With no data
+for today (the app has not run, or a new day has started) it reads "—" and "Open Vago", never
+yesterday's number. A click opens the Day window (`vago://day`).
+
+The widget does not read iCloud or `state.json`. The app writes `widget.json` into the App Group
+`VWH2FKV78Q.com.zaitsew.vago` (at most once a minute, at once when the percent or the day
+changes) and asks WidgetKit to reload (at most every 5 minutes, same exceptions). The widget also
+re-reads it every 15 minutes, so it can lag a few minutes. Spec: `docs/ARCHITECTURE.md`, Mac app.
+
 ## The Settings window
 
 Goals text (the AI judges against it), launch at login, move reminders and their interval,
@@ -134,6 +149,9 @@ app using the microphone), plus one minute. Settings: on or off, and 45 to 120 m
   `focus_sessions_7d`, `judge_available`, `moves_today`, `moves_7d`,
   `productive_percent_today` (all devices; -1 before 15 active minutes), `auto_rules`.
 
+`~/Library/Group Containers/VWH2FKV78Q.com.zaitsew.vago/widget.json` is the widget's snapshot
+(see The desktop widget).
+
 A state file that cannot be read is copied to `state.corrupt-<time>.json` before a new one starts.
 
 ## How sync works
@@ -154,6 +172,8 @@ profile above. Without it the store is skipped and Settings says "iCloud sync of
 - The Foundation Models judge on this Mac depends on Apple Intelligence being enabled; the build
   check records whether it was available, not how accurate its verdicts are.
 - iCloud sync between a Mac and an iPhone. Unit tests do not cover the app target.
+- The desktop widget in the real widget gallery: its views were rendered offscreen and both builds
+  were signed, but WidgetKit loading it and the app's access to the App Group were not exercised.
 - Behaviour across the 04:00 day change and wake from sleep over many hours.
 - The move reminder on a real day: the panel's timing, the call hold with each meeting app, and
   whether two misses per streak is the right cap. Unit tests cover `BreakCoach` only.

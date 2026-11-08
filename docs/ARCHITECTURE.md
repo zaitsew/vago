@@ -22,8 +22,10 @@ Signing: team `VWH2FKV78Q`, automatic in Debug. Bundle ids:
 | DeviceActivityReport extension | `com.zaitsew.vago.report` |
 | Widget + Live Activity extension | `com.zaitsew.vago.widgets` |
 | Mac app | `com.zaitsew.vago.mac` |
+| Mac widget extension | `com.zaitsew.vago.mac.widgets` |
 
 App Group (iPhone app and its extensions): `group.com.zaitsew.vago`.
+App Group (Mac app and its widget): `VWH2FKV78Q.com.zaitsew.vago`.
 iCloud key-value store, shared by both apps: `$(TeamIdentifierPrefix)com.zaitsew.vago`.
 
 ## VagoKit contract
@@ -234,6 +236,21 @@ public enum Readout { public static func short(seconds: Int, limitMinutes: Int) 
   permissions, the AI judge state, iCloud, and Forget learned rules.
 - **DayStrip**: one lane per device, one stacked cell per hour (work, neutral, waste), from
   `Ledger.hours(for:devices:)`; at least 07:00–23:00.
+- **Desktop widget** (`VagoMacWidgets`, `MacWidgets/`): "Vago — today", small and medium. The
+  app writes `widget.json` (`WidgetSnapshot`, `Mac/WidgetSnapshot.swift`) into the App Group
+  container `VWH2FKV78Q.com.zaitsew.vago`; the widget only reads it, so it needs no iCloud and no
+  VagoKit state. The snapshot holds the merged day for all devices (the app's ledger already has
+  the iPhone's day from iCloud): percent (nil before 15 active minutes), work, neutral and waste
+  minutes, the limit, Mac and iPhone hour slots, the mood emoji and two timestamps.
+  `flush` writes it at most once a minute (at once when the percent or the day changes) and calls
+  `WidgetCenter.reloadAllTimelines()` at most every 5 minutes (same exceptions). The timeline has
+  one entry and `.after(now + 15 min)`; a snapshot from another day or none shows "—", never
+  yesterday's number. A tap opens `vago://day`, which the app delegate turns into the Day window.
+  The widget is sandboxed and compiled with `DayStrip.swift` and `Style.swift`. On macOS a
+  team-prefixed group needs no provisioning profile.
+- **Signing**: the app takes its entitlements and profile from `VAGO_MAC_ENTITLEMENTS` and
+  `VAGO_MAC_PROFILE`, which `install-mac.sh` sets. A command-line `CODE_SIGN_ENTITLEMENTS`
+  would reach the widget target too and give it the app's entitlements.
 - **Storage**: `~/Library/Application Support/Vago/state.json` (rules, limit, sessions,
   focus, breaks, judge audit, verdict memory). Today's `DeviceDay` is written to the key-value store every 30 seconds.
   `~/Library/Application Support/Vago/usage.json` holds the counters `./check.sh usage` prints.
