@@ -94,6 +94,8 @@ public actor Classifier {
     private var cacheDay: DayKey
     private var cache: [String: Verdict] = [:]
     private var inFlight: [String: Task<Verdict?, Never>] = [:]
+    /// Bumped when the goals change, so a verdict asked under the old goals is not cached.
+    private var generation = 0
 
     public init(
         rules: RuleBook,
@@ -117,6 +119,8 @@ public actor Classifier {
         guard goals != self.goals else { return }
         self.goals = goals
         cache.removeAll()                          // verdicts were made against the old goals
+        inFlight.removeAll()
+        generation += 1
     }
 
     /// False holds the judge's "work" verdicts on ambiguous places (see `JudgeAudit`).
@@ -151,13 +155,16 @@ public actor Classifier {
             verdict = await pending.value          // one judge call per key, even when asked every second
         } else {
             let goals = self.goals
+            let asked = generation
             var ctx = context
             ctx.ambiguous = ambiguous
             let task = Task { await judge.judge(o, goals: goals, context: ctx) }
             inFlight[key] = task
             verdict = await task.value
-            inFlight[key] = nil
-            if let verdict, cacheDay == day { cache[key] = verdict }   // a nil verdict is retried next time
+            if generation == asked {
+                inFlight[key] = nil
+                if let verdict, cacheDay == day { cache[key] = verdict }   // a nil verdict is retried next time
+            }
         }
         return classification(from: verdict, ambiguous: ambiguous)
     }
