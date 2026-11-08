@@ -13,17 +13,13 @@ extension AppModel {
         let answer = overrides[key]
         let c: Classification
         if let answer {
-            c = Classification(bucket: answer, unclear: false, reason: "your answer today")
+            c = Classification(bucket: answer, unclear: false, reason: "your answer today", source: .answer)
         } else {
             c = await classifier.classify(obs)
         }
         rollIfNeeded(now)
 
-        switch c.bucket {
-        case .productive: today.productive += seconds
-        case .procrastination, .ambiguous: today.procrastination += seconds
-        case .neutral: break
-        }
+        today.add(c.bucket == .ambiguous ? .procrastination : c.bucket, seconds: seconds, at: now)
         tickFocus(bucket: c.bucket, seconds: seconds, now: now)
         record(obs, key: key, classification: c, seconds: seconds, now: now)
         commit(now: now)
@@ -59,7 +55,7 @@ extension AppModel {
     /// Extends the open session while the owner stays on the same place with the same verdict
     /// and the same certainty, so an unclear stretch always reaches the review queue.
     private func record(_ obs: ActivitySample, key: String, classification c: Classification, seconds: Int, now: Date) {
-        guard c.bucket != .neutral else { currentSession = nil; return }
+        guard c.bucket != .neutral || c.unclear else { currentSession = nil; return }
         if let open = currentSession, open.key == key, sessions.indices.contains(open.index),
            sessions[open.index].guess == c.bucket,
            reviewPending.contains(sessions[open.index].id) == c.unclear,
@@ -177,19 +173,17 @@ extension AppModel {
         onChange?()
     }
 
-    /// Takes sessions out of the queue. Unclear sessions were counted as procrastination, so
-    /// "work" moves their seconds to productive.
+    /// Takes sessions out of the queue and moves their seconds to the answer's bucket, in the
+    /// day total and in the hour they happened. Unsure sessions were counted as neutral (or as
+    /// procrastination when there was no judge).
     private func settle(_ ids: [UUID], as bucket: Bucket) {
         let set = Set(ids)
         reviewPending.removeAll { set.contains($0) }
-        guard bucket == .productive else { return }
-        var moved = 0
-        for i in sessions.indices where set.contains(sessions[i].id) {
-            moved += sessions[i].seconds
-            sessions[i].guess = .productive
+        for i in sessions.indices where set.contains(sessions[i].id) && sessions[i].guess != bucket {
+            let s = sessions[i]
+            let from: Bucket = s.guess == .ambiguous ? .procrastination : s.guess
+            today.move(s.seconds, from: from, to: bucket, startingAt: s.start)
+            sessions[i].guess = bucket
         }
-        let shift = min(moved, today.procrastination)
-        today.procrastination -= shift
-        today.productive += shift
     }
 }

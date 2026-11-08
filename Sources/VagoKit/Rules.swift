@@ -2,7 +2,7 @@ import Foundation
 
 /// One user, review or built-in rule. All fields that are set must match.
 public struct Rule: Codable, Sendable, Equatable, Identifiable {
-    public enum Source: String, Codable, Sendable { case builtIn, user, review }
+    public enum Source: String, Codable, Sendable { case builtIn, user, review, auto }
 
     public var id: UUID
     public var bundleID: String?         // exact match, case-insensitive
@@ -10,7 +10,7 @@ public struct Rule: Codable, Sendable, Equatable, Identifiable {
     public var pathPrefix: String?       // "/direct" matches "/direct" and "/direct/inbox", not "/directory"
     public var titleContains: String?    // case-insensitive
     public var bucket: Bucket
-    public var source: Source            // .builtIn, .user, .review
+    public var source: Source            // .builtIn, .user, .review, .auto (learned from sure verdicts)
 
     public init(
         id: UUID = UUID(),
@@ -141,8 +141,19 @@ public struct RuleBook: Codable, Sendable {
                 rule.titleContains = Self.firstMeaningfulWord(of: o.windowTitle, excluding: o.appName)
             }
         }
-        rules.removeAll { $0.source == .review && $0.sameMatch(as: rule) }
+        rules.removeAll { ($0.source == .review || $0.source == .auto) && $0.sameMatch(as: rule) }
         rules.insert(rule, at: 0)
+    }
+
+    /// Adds a rule `VerdictMemory` learned. It goes after the owner's rules and before the
+    /// built-ins, so a correction always wins. Ignored when the owner already has a rule for
+    /// the same place.
+    public mutating func adopt(_ rule: Rule) {
+        guard rule.source == .auto else { return }
+        if rules.contains(where: { ($0.source == .user || $0.source == .review) && $0.sameMatch(as: rule) }) { return }
+        rules.removeAll { $0.source == .auto && $0.sameMatch(as: rule) }
+        let index = rules.firstIndex { $0.source == .builtIn } ?? rules.endIndex
+        rules.insert(rule, at: index)
     }
 
     private static let stopWords: Set<String> = ["the", "and", "for", "with", "from", "you", "your", "new", "untitled", "window"]

@@ -32,6 +32,7 @@ let builtIn = RuleBook.builtIn
 actor StubJudge: Judge {
     private(set) var calls = 0
     private(set) var lastGoals = ""
+    private(set) var lastContext: JudgeContext?
     private let verdict: Verdict?
     private let delay: Duration?
 
@@ -40,9 +41,10 @@ actor StubJudge: Judge {
         self.delay = delay
     }
 
-    func judge(_ o: ActivitySample, goals: String) async -> Verdict? {
+    func judge(_ o: ActivitySample, goals: String, context: JudgeContext) async -> Verdict? {
         calls += 1
         lastGoals = goals
+        lastContext = context
         if let delay { try? await Task.sleep(for: delay) }
         return verdict
     }

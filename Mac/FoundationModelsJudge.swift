@@ -2,7 +2,7 @@ import Foundation
 import FoundationModels
 import VagoKit
 
-/// The AI verdict for ambiguous use (docs/PRODUCT.md, signal 3).
+/// The AI verdict for places no rule settles: ambiguous ones and unknown ones (docs/PRODUCT.md).
 ///
 /// POLICY section 1, model routing: this runs on-device on purpose. Window titles and URLs are
 /// private, the call happens every few seconds (once per site and title per day, then cached by
@@ -18,7 +18,7 @@ struct FoundationModelsJudge: Judge {
             case neutral
         }
 
-        @Guide(description: "productive if this use serves the owner's goals, procrastination if it is scrolling, video, news or games, neutral if it is a necessary chore")
+        @Guide(description: "productive if this use serves the owner's goals, procrastination if it is scrolling, feeds, video, news or games, neutral if it is a necessary chore")
         var bucket: Answer
 
         @Guide(description: "How sure you are, from 0 (guess) to 1 (certain)", .range(0.0...1.0))
@@ -39,21 +39,28 @@ struct FoundationModelsJudge: Judge {
         isAvailable ? FoundationModelsJudge() : nil
     }
 
-    func judge(_ o: ActivitySample, goals: String) async -> Verdict? {
+    func judge(_ o: ActivitySample, goals: String, context: JudgeContext) async -> Verdict? {
         guard Self.isAvailable else { return nil }
         let instructions = """
-        You decide whether one moment of computer use is work or procrastination for its owner.
+        You decide whether one moment of computer use is work, procrastination or neutral for its owner.
         The owner's goals: \(goals)
-        Social media, video and chat apps can be work (a client message, a talk about the owner's field) \
-        or waste (a feed, reels, shorts, memes, news). Judge from the page title and address. \
-        When the title and address do not say, give a low confidence instead of guessing.
+        Work serves the goals. Procrastination is time spent on nothing: feeds, reels, shorts, memes, \
+        news, games, browsing with no task. Neutral is a necessary chore that is neither (a bank, a \
+        settings screen, a file manager). Social media, video and chat apps can be work (a client \
+        message, a talk or tutorial that names a tool or task from the goals) or waste. Scrolling a \
+        feed is waste even when the topic is the owner's field. Judge from the page title, the \
+        address and the context. When they do not say, give a low confidence instead of guessing.
         """
         let session = LanguageModelSession(instructions: instructions)
-        let prompt = """
-        App: \(o.appName)
-        Site: \(o.host ?? "none")\(o.host == nil ? "" : o.path)
-        Window title: \(Self.clip(o.windowTitle ?? "none", 200))
-        """
+        var lines = [
+            "App: \(o.appName)",
+            "Site: \(o.host ?? "none")\(o.host == nil ? "" : o.path)",
+            "Window title: \(Self.clip(o.windowTitle ?? "none", 200))",
+        ]
+        if let hour = context.hour { lines.append("Local time: \(hour):00") }
+        if context.secondsInFront >= 60 { lines.append("In front for: \(context.secondsInFront / 60) min") }
+        if let previous = context.previous { lines.append("Just before: \(previous)") }
+        let prompt = lines.joined(separator: "\n")
         do {
             let response = try await session.respond(to: prompt, generating: Output.self)
             let out = response.content

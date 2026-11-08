@@ -8,6 +8,10 @@ public struct DaySummary: Codable, Sendable, Equatable {
     public var procrastinationMinutes: Int
     public var productiveMinutes: Int
     public var focusMinutes: Int
+    /// Neutral minutes (not waste, not work). 0 for days written before neutral was counted.
+    public var neutralMinutes: Int
+    /// The main number, `ProductiveShare.percent`: nil below 15 active minutes.
+    public var productivePercent: Int?
     /// The daily limit. Only known for today: earlier days did not keep theirs.
     public var limitMinutes: Int?
     public var remainingMinutes: Int?
@@ -16,8 +20,10 @@ public struct DaySummary: Codable, Sendable, Equatable {
 
     public init(
         day: String, tracked: Bool, procrastinationMinutes: Int, productiveMinutes: Int, focusMinutes: Int,
-        limitMinutes: Int? = nil
+        limitMinutes: Int? = nil, neutralMinutes: Int = 0, productivePercent: Int? = nil
     ) {
+        self.neutralMinutes = neutralMinutes
+        self.productivePercent = productivePercent
         self.day = day
         self.tracked = tracked
         self.procrastinationMinutes = procrastinationMinutes
@@ -32,9 +38,10 @@ public struct DaySummary: Codable, Sendable, Equatable {
         }
     }
 
-    /// "😄 12 of 30 min on procrastination, 18 min left. 45 min of work, 25 min of focus."
+    /// "92% productive. 😄 12 of 30 min on procrastination, 18 min left. 45 min of work, 25 min of focus."
     public var sentence: String {
         var parts: [String] = []
+        if let productivePercent { parts.append("\(productivePercent)% productive.") }
         if let limitMinutes, let emoji, let remainingMinutes {
             let left = remainingMinutes > 0 ? "\(remainingMinutes) min left" : "over the limit"
             parts.append("\(emoji) \(procrastinationMinutes) of \(limitMinutes) min on procrastination, \(left).")
@@ -94,13 +101,16 @@ extension Ledger {
     public func summary(for day: DayKey, limitMinutes: Int? = nil) -> DaySummary {
         let total = total(for: day)
         let tracked = Device.allCases.contains { days[Self.key(day, $0)] != nil }
+        let share = share(for: day)
         return DaySummary(
             day: day.id,
             tracked: tracked,
             procrastinationMinutes: total.procrastination / 60,
             productiveMinutes: total.productive / 60,
             focusMinutes: total.focus / 60,
-            limitMinutes: limitMinutes
+            limitMinutes: limitMinutes,
+            neutralMinutes: share.neutral / 60,
+            productivePercent: share.percent
         )
     }
 

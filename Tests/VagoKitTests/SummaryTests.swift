@@ -42,7 +42,7 @@ struct SummaryTests {
         l.merge(deviceDay(today.adding(days: -1), procrastination: 20))
         let s = l.summary(for: today.adding(days: -1))
         #expect(s.limitMinutes == nil && s.mood == nil && s.remainingMinutes == nil)
-        #expect(s.sentence.hasPrefix("20 min on procrastination."))
+        #expect(s.sentence.hasPrefix("0% productive. 20 min on procrastination."))
     }
 
     @Test func weekListsSevenDaysOldestFirstAndSkipsUntrackedInAverages() {

@@ -24,10 +24,10 @@ struct ClassifierTests {
         let c = make(nil)
         let work = await c.classify(app("com.apple.dt.Xcode"))
         let neutral = await c.classify(app("com.apple.finder"))
-        let unknown = await c.classify(app("com.example.unknown"))
+        let unknown = await c.classify(app("com.example.unknown"))      // no judge: unknown stays neutral
         #expect(work.bucket == .productive && !work.unclear)
         #expect(neutral.bucket == .neutral && !neutral.unclear)
-        #expect(unknown.bucket == .neutral && !unknown.unclear)
+        #expect(unknown.bucket == .neutral && !unknown.unclear && unknown.source == .fallback)
     }
 
     @Test func highConfidenceVerdictIsUsed() async {
@@ -39,15 +39,15 @@ struct ClassifierTests {
     }
 
     @Test func confidenceExactlyAtTheLineIsUsed() async {
-        let c = make(StubJudge(Verdict(bucket: .productive, confidence: 0.6, reason: "edge")))
+        let c = make(StubJudge(Verdict(bucket: .productive, confidence: 0.7, reason: "edge")))
         #expect(await c.classify(reel).bucket == .productive)
     }
 
-    @Test func lowConfidenceCountsAsProcrastinationAndIsUnclear() async {
-        let c = make(StubJudge(Verdict(bucket: .productive, confidence: 0.59, reason: "maybe work")))
+    @Test func lowConfidenceIsNeutralAndUnclear() async {
+        let c = make(StubJudge(Verdict(bucket: .productive, confidence: 0.69, reason: "maybe work")))
         let r = await c.classify(reel)
-        #expect(r.bucket == .procrastination)
-        #expect(r.unclear)
+        #expect(r.bucket == .neutral)
+        #expect(r.unclear && r.verdict == nil && r.ambiguous)
     }
 
     @Test func noJudgeCountsAsProcrastinationAndIsUnclear() async {
@@ -56,19 +56,19 @@ struct ClassifierTests {
         #expect(r.unclear)
     }
 
-    @Test func nilVerdictCountsAsProcrastinationAndIsNotCached() async {
+    @Test func nilVerdictIsNeutralAndIsNotCached() async {
         let judge = StubJudge(nil)
         let c = make(judge)
         let first = await c.classify(reel)
         _ = await c.classify(reel)
-        #expect(first.bucket == .procrastination && first.unclear)
+        #expect(first.bucket == .neutral && first.unclear)
         #expect(await judge.calls == 2)                        // a failed call is retried
     }
 
     @Test func aJudgeThatAnswersAmbiguousIsUnclear() async {
         let c = make(StubJudge(Verdict(bucket: .ambiguous, confidence: 0.95, reason: "no idea")))
         let r = await c.classify(reel)
-        #expect(r.bucket == .procrastination && r.unclear)
+        #expect(r.bucket == .neutral && r.unclear)
     }
 
     @Test func theJudgeGetsTheGoals() async {
@@ -135,5 +135,64 @@ struct ClassifierTests {
         await c.update(rules: book)
         let r = await c.classify(web("https://instagram.com/reels/1"))
         #expect(r.bucket == .productive && !r.unclear)
+    }
+
+    // MARK: Autonomy
+
+    @Test func unknownPlacesGoToTheJudge() async {
+        let judge = StubJudge(Verdict(bucket: .procrastination, confidence: 0.9, reason: "a game"))
+        let r = await make(judge).classify(app("com.example.game", title: "Level 3"))
+        #expect(r.bucket == .procrastination && !r.unclear && r.source == .judge && !r.ambiguous)
+        #expect(await judge.lastContext?.ambiguous == false)
+    }
+
+    @Test func theJudgeCannotOverrideAWasteRule() async {
+        let judge = StubJudge(workVerdict)
+        let r = await make(judge).classify(web("https://www.youtube.com/shorts/abc", title: "Swift tips"))
+        #expect(r.bucket == .procrastination && r.source == .rule)
+        #expect(await judge.calls == 0)
+    }
+
+    @Test func theJudgeGetsTheContext() async {
+        let judge = StubJudge(workVerdict)
+        _ = await make(judge).classify(reel, context: JudgeContext(hour: 11, secondsInFront: 40, previous: "Xcode (work)"))
+        let ctx = await judge.lastContext
+        #expect(ctx?.hour == 11 && ctx?.previous == "Xcode (work)" && ctx?.ambiguous == true)
+    }
+
+    @Test func aHeldJudgeCannotCallAmbiguousUseWork() async {
+        let c = make(StubJudge(workVerdict))
+        await c.setJudgeTrusted(false)
+        let r = await c.classify(reel)
+        #expect(r.bucket == .neutral && r.unclear && r.verdict == .productive)
+        #expect(r.reason.hasPrefix("held: "))
+    }
+
+    @Test func aHeldJudgeStillDecidesUnknownPlaces() async {
+        let c = make(StubJudge(workVerdict))
+        await c.setJudgeTrusted(false)
+        #expect(await c.classify(app("com.example.editor")).bucket == .productive)
+    }
+
+    @Test func newGoalsClearTheCache() async {
+        let judge = StubJudge(workVerdict)
+        let c = make(judge)
+        _ = await c.classify(reel)
+        await c.update(goals: "learn Spanish")
+        _ = await c.classify(reel)
+        #expect(await judge.calls == 2)
+        #expect(await judge.lastGoals == "learn Spanish")
+    }
+
+    @Test func aVerdictAskedUnderOldGoalsIsNotCached() async {
+        let judge = StubJudge(workVerdict, delay: .milliseconds(80))
+        let c = make(judge)
+        let o = reel
+        let first = Task { await c.classify(o) }
+        try? await Task.sleep(for: .milliseconds(20))
+        await c.update(goals: "learn Spanish")
+        _ = await first.value
+        _ = await c.classify(o)
+        #expect(await judge.calls == 2)
     }
 }
