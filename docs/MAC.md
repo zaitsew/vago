@@ -61,6 +61,15 @@ and URLs stay in `state.json`, in the sessions of the current day only.
   "Work" or "Waste" there becomes a permanent rule (`RuleBook.learn`). "Work" also moves those
   seconds from procrastination to work.
 
+## Move breaks
+
+After 90 minutes at the Mac without a 5-minute break, a panel at the top centre names one desk
+exercise with exact reps. "I did it" counts it, "Another" swaps it, "Later" asks again in 15
+minutes. Unanswered, it closes after 90 seconds and asks once more after 25 minutes; after two
+misses only 🚶 stays in the menu bar until the next break. It waits during focus and calls (any
+app using the microphone), plus one minute. Settings: on or off, and 45 to 120 minutes. Rules:
+`docs/PRODUCT.md`, Move breaks.
+
 ## Files
 
 `~/Library/Application Support/Vago/`
@@ -70,7 +79,7 @@ and URLs stay in `state.json`, in the sessions of the current day only.
   Written at most every 5 seconds when something changed, and on quit.
 - `usage.json`: flat counters for `./check.sh usage`: `days_tracked`,
   `procrastination_min_today` (all devices), `limit_min`, `avg_procrastination_min_7d`,
-  `focus_sessions_7d`, `judge_available`.
+  `focus_sessions_7d`, `judge_available`, `moves_today`, `moves_7d`.
 
 A state file that cannot be read is copied to `state.corrupt-<time>.json` before a new one starts.
 
@@ -93,4 +102,6 @@ profile above. Without it the store is skipped and Settings says "iCloud sync of
   check records whether it was available, not how accurate its verdicts are.
 - iCloud sync between a Mac and an iPhone. Unit tests do not cover the app target.
 - Behaviour across the 04:00 day change and wake from sleep over many hours.
+- The move reminder on a real day: the panel's timing, the call hold with each meeting app, and
+  whether two misses per streak is the right cap. Unit tests cover `BreakCoach` only.
 - Several Macs on one Apple Account: they share one `mac` key per day, so the last writer wins.

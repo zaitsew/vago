@@ -9,6 +9,8 @@ walks you down to 30 minutes a day.
 - **Intent check**: ambiguous apps ask "Work or scroll?" before they open.
 - **On-device AI**: the Mac judges window titles and URLs against your goals; nothing leaves it.
 - **Focus sessions**: grow a tree 🌱 → 🌳 in 25 or 50 minutes; a distraction wilts it 🥀.
+- **Move breaks** (Mac): after 90 minutes at the laptop without a break, a panel suggests one
+  2-minute desk exercise with exact reps. It waits out focus and calls, and asks at most twice.
 - **Ask it**: Siri and Shortcuts on the iPhone ("How focused am I in Vago"), and a read-only
   MCP server on the Mac so Claude Code or Codex can answer "how focused was I today"
   ([docs/AI.md](docs/AI.md)).

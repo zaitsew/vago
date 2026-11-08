@@ -30,6 +30,7 @@ extension AppModel {
 
         currentLabel = c.bucket == .neutral ? nil : SiteKey.label(obs)
         nudger?.consider(key: key, label: SiteKey.label(obs), classification: c, answered: answer != nil, focus: focus, now: now)
+        noteBreakActivity(key: key, lastInput: Self.lastInput(for: obs, now: now), now: now)
         onChange?()
     }
 

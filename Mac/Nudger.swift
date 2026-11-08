@@ -25,7 +25,7 @@ final class Nudger {
         if key != dwellKey {
             dwellKey = key
             dwellSince = now
-            panel.close()                              // the owner has moved on
+            if panel.tag == "nudge" { panel.close() }  // the owner has moved on
         }
         guard !answered, !panel.isShowing else { return }
         if let last = lastShown[key], now.timeIntervalSince(last) < Self.cooldown { return }
@@ -57,7 +57,31 @@ final class Nudger {
     }
 
     func toast(_ text: String) {
-        panel.show(title: text, subtitle: nil, buttons: [], seconds: 8)
+        guard panel.tag != "break" else { return }
+        panel.show(title: text, subtitle: nil, buttons: [], seconds: 8, tag: "toast")
+    }
+
+    /// The move reminder. Stays 90 seconds; closing by itself counts as unanswered.
+    func showBreak(move: Move, minutes: Int, done: @escaping @MainActor () -> Void, another: @escaping @MainActor () -> Void,
+                   later: @escaping @MainActor () -> Void, ignored: @escaping @MainActor () -> Void) {
+        panel.show(
+            title: "🚶 \(minutes) min at the Mac. Time to move",
+            subtitle: move.title,
+            detail: move.how,
+            buttons: [
+                .init(title: "I did it", prominent: true, action: done),
+                .init(title: "Another", prominent: false, keepsOpen: true, action: another),
+                .init(title: "Later", prominent: false, action: later),
+            ],
+            seconds: 90, tag: "break", timedOut: ignored
+        )
+    }
+
+    /// True while a "Work or scroll?" question waits for an answer.
+    var showingNudge: Bool { panel.tag == "nudge" }
+
+    func closeBreak() {
+        if panel.tag == "break" { panel.close() }
     }
 
     func forgetDay() { lastShown = [:] }

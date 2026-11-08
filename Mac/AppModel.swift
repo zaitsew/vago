@@ -33,6 +33,7 @@ final class AppModel {
     var focusLog: [FocusSession]
     var rules: RuleBook
     var onboarded: Bool
+    var breaks: BreakCoach
 
     // MARK: Live
     var clock = Date()
@@ -54,6 +55,9 @@ final class AppModel {
     @ObservationIgnored var lastUsageWrite = Date.distantPast
     @ObservationIgnored var nudger: Nudger?
     @ObservationIgnored var sync: CloudSync?
+    @ObservationIgnored var breakLastKey: String?
+    @ObservationIgnored var breakDueSince: Date?
+    @ObservationIgnored var breakHeldUntil: Date?
     /// Called after every change the menu bar shows.
     @ObservationIgnored var onChange: (@MainActor () -> Void)?
 
@@ -70,6 +74,7 @@ final class AppModel {
         focus = state.focus
         focusLog = state.focusLog
         onboarded = state.onboarded
+        breaks = state.breaks
         let book = RuleBook(custom: state.customRules)
         rules = book
         today = state.today ?? DeviceDay(day: day, device: .mac, updatedAt: now)
@@ -138,6 +143,7 @@ final class AppModel {
         s.overridesDay = today.day
         s.focus = focus
         s.focusLog = focusLog
+        s.breaks = breaks
         return s
     }
 
@@ -154,6 +160,8 @@ final class AppModel {
             "avg_procrastination_min_7d": average,
             "focus_sessions_7d": recent.count,
             "judge_available": judgeAvailable ? 1 : 0,
+            "moves_today": breaks.moves(on: today.day),
+            "moves_7d": breaks.moves(since: weekAgo),
         ]
     }
 
@@ -166,12 +174,13 @@ final class AppModel {
     var readout: String { Readout.short(seconds: totals.procrastination, limitMinutes: limit.current) }
 
     /// The menu bar text and its colour. During focus: the tree stage and the minutes left.
+    /// A 🚶 follows while a move is due.
     var menuBar: (text: String, tint: Tint?) {
         if let focus, focus.state == .growing {
             let minutes = Int((focus.remaining(at: clock) / 60).rounded(.up))
             return ("\(focus.stage(at: clock)) \(minutes)m", nil)
         }
-        return (readout, mood.tint)
+        return (breaks.wantsMark(at: clock) ? "\(readout) 🚶" : readout, mood.tint)
     }
 
     func seconds(of device: Device) -> (procrastination: Int, productive: Int, focus: Int)? {

@@ -146,6 +146,20 @@ public struct FocusSession: Codable, Sendable, Equatable {
     public mutating func tick(bucket: Bucket, seconds: Int, now: Date)
 }
 
+/// The move reminder: a streak of use at the Mac, a due reminder, a rotation of desk moves.
+public struct Move: Codable, Sendable, Equatable, Identifiable { public var id, title, how: String; public static let all: [Move] }
+public struct BreakCoach: Codable, Sendable, Equatable {
+    public var enabled: Bool                     // default true
+    public var streakMinutes: Int                // default 90
+    public var move: Move                        // the next suggestion
+    public mutating func active(at now: Date)    // use in the second ending at `now`; a 5-minute gap starts a new streak
+    public func streakSeconds(at now: Date) -> Int
+    public func wantsPanel(at now: Date) -> Bool // due, not snoozed, fewer than 2 unanswered panels
+    public func wantsMark(at now: Date) -> Bool  // due: 🚶 in the menu bar
+    public mutating func shown(at now: Date), ignore(at:), later(at:), pauseToday(at:), done(at:), swap()
+    public func moves(on day: DayKey) -> Int
+}
+
 /// Formatting shared by the menu bar, widget and Live Activity: "😄 12m", "😟 28/30m".
 public enum Readout { public static func short(seconds: Int, limitMinutes: Int) -> String }
 ```
@@ -165,11 +179,15 @@ public enum Readout { public static func short(seconds: Int, limitMinutes: Int) 
   private, the call runs every few seconds, and the on-device model is free.
 - **Menu bar**: an `NSStatusItem` whose attributed title is `Readout.short` tinted by `Mood`.
   During focus it shows the stage emoji and the minutes left.
+- **Move breaks**: every counted second feeds `BreakCoach.active`. When `wantsPanel` is true
+  and no focus session runs and the microphone is idle (`Microphone.inUse`, a CoreAudio device
+  property; Vago never opens the microphone), the panel shows at the next app switch or after
+  3 minutes. It shares `NudgePanel` with the nudge and never replaces an open nudge.
 - **Popover**: today's procrastination, work and focus across devices; the limit and
-  baseline; top distractions; Start focus 25 / 50; the review queue; settings (goals text,
-  rules, launch at login).
+  baseline; top distractions; Start focus 25 / 50; time since the last break and today's moves;
+  the review queue; settings (goals text, move reminders, launch at login).
 - **Storage**: `~/Library/Application Support/Vago/state.json` (rules, limit, sessions,
-  focus). Today's `DeviceDay` is written to the key-value store every 30 seconds.
+  focus, breaks). Today's `DeviceDay` is written to the key-value store every 30 seconds.
   `~/Library/Application Support/Vago/usage.json` holds the counters `./check.sh usage` prints.
 - **Install**: `scripts/install-mac.sh`, signed for this Mac like Knut's. No Mac App Store
   build: the tracker needs Accessibility and Apple Events, which the sandbox does not allow.

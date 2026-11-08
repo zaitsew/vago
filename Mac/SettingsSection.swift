@@ -1,7 +1,7 @@
 import SwiftUI
 import VagoKit
 
-/// Goals text, launch at login, permissions and Quit.
+/// Goals text, launch at login, move reminders, permissions and Quit.
 struct SettingsSection: View {
     let model: AppModel
     @State private var open = false
@@ -12,6 +12,7 @@ struct SettingsSection: View {
             VStack(alignment: .leading, spacing: 12) {
                 goals
                 Toggle("Launch at login", isOn: Binding(get: { model.launchAtLogin }, set: { model.setLaunchAtLogin($0) }))
+                moves
                 permissions
                 status
             }
@@ -34,6 +35,19 @@ struct SettingsSection: View {
             if draft != model.goals {
                 Button("Save goals", action: commit).controlSize(.small)
             }
+        }
+    }
+
+    private var moves: some View {
+        HStack {
+            Toggle("Move reminders", isOn: Binding(get: { model.breaks.enabled }, set: { model.setBreaksEnabled($0) }))
+            Spacer()
+            Picker("after", selection: Binding(get: { model.breaks.streakMinutes }, set: { model.setBreakMinutes($0) })) {
+                ForEach(BreakCoach.streakChoices, id: \.self) { Text("\($0) min").tag($0) }
+            }
+            .labelsHidden()
+            .fixedSize()
+            .disabled(!model.breaks.enabled)
         }
     }
 
