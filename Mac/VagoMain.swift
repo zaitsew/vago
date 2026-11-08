@@ -21,6 +21,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var tracker: Tracker?
     private var status: StatusItemController?
     private var nudger: Nudger?
+    /// A `vago://day` that arrived before launch finished (a widget tap while Vago was closed).
+    private var openDayWhenReady = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let model = AppModel()
@@ -36,6 +38,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.nudger = nudger
         self.tracker = tracker
 
+        if openDayWhenReady {
+            openDayWhenReady = false
+            NSApp.activate()
+            status.open(.day)
+        }
+
         if !model.onboarded {
             // First run: ask for Accessibility now, and explain Automation in the popover.
             Permissions.requestAccessibility()
@@ -47,8 +55,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// `vago://day` (the widget's tap) opens the Day window.
     func application(_ application: NSApplication, open urls: [URL]) {
         guard urls.contains(where: { $0.scheme == "vago" && ($0.host ?? "") == "day" }) else { return }
+        guard let status else { openDayWhenReady = true; return }
         NSApp.activate()
-        status?.open(.day)
+        status.open(.day)
     }
 
     func applicationWillTerminate(_ notification: Notification) {

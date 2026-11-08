@@ -33,11 +33,25 @@ struct TodayProvider: TimelineProvider {
     }
 
     /// One entry, read again every 15 minutes. The app also asks for a reload when the percent
-    /// changes. A re-read after 04:00 sees the new day, so yesterday's number is never shown.
+    /// changes. When the day boundary (04:00) falls before the next read, a second entry dated at
+    /// the boundary shows "—" from that moment, so yesterday's number is never shown.
     func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry>) -> Void) {
         let now = Date()
-        let entry = TodayEntry(date: now, snapshot: WidgetSnapshot.read())
-        completion(Timeline(entries: [entry], policy: .after(now.addingTimeInterval(15 * 60))))
+        let snapshot = WidgetSnapshot.read()
+        let refresh = now.addingTimeInterval(15 * 60)
+        var entries = [TodayEntry(date: now, snapshot: snapshot)]
+        if let boundary = Self.nextDayStart(after: now), boundary <= refresh {
+            entries.append(TodayEntry(date: boundary, snapshot: snapshot))
+        }
+        completion(Timeline(entries: entries, policy: .after(refresh)))
+    }
+
+    /// The first moment after `date` that belongs to a new `DayKey` (`DayKey.rolloverHour` local).
+    static func nextDayStart(after date: Date, calendar: Calendar = .current) -> Date? {
+        guard let candidate = calendar.nextDate(
+            after: date, matching: DateComponents(hour: DayKey.rolloverHour, minute: 0, second: 0), matchingPolicy: .nextTime
+        ) else { return nil }
+        return DayKey.of(candidate, calendar: calendar) != DayKey.of(date, calendar: calendar) ? candidate : nil
     }
 }
 
