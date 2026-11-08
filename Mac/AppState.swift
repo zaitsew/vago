@@ -24,6 +24,8 @@ struct PersistedState: Codable, Sendable {
     var focus: FocusSession?
     /// Finished focus sessions of the last 14 days.
     var focusLog: [FocusSession] = []
+    /// The move reminder: the current streak at the Mac, its settings and the moves log.
+    var breaks = BreakCoach()
 
     init() {}
 
@@ -42,11 +44,12 @@ struct PersistedState: Codable, Sendable {
         overridesDay = try c.decodeIfPresent(DayKey.self, forKey: .overridesDay)
         focus = try c.decodeIfPresent(FocusSession.self, forKey: .focus)
         focusLog = try c.decodeIfPresent([FocusSession].self, forKey: .focusLog) ?? []
+        breaks = try c.decodeIfPresent(BreakCoach.self, forKey: .breaks) ?? BreakCoach()
     }
 
     private enum Keys: String, CodingKey {
         case onboarded, goals, customRules, limit, ledger, today, sessions, reviewPending
-        case overrides, overridesDay, focus, focusLog
+        case overrides, overridesDay, focus, focusLog, breaks
     }
 }
 

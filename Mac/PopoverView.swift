@@ -12,6 +12,7 @@ struct PopoverView: View {
             Divider()
             TodaySection(model: model)
             FocusSection(model: model)
+            if model.breaks.enabled { BreakSection(model: model) }
             if !model.reviewItems.isEmpty { ReviewSection(model: model) }
             Divider()
             SettingsSection(model: model)
@@ -149,6 +150,45 @@ private struct FocusSection: View {
                 if let toast = model.lastToast {
                     Text(toast).font(.caption).foregroundStyle(.secondary)
                 }
+            }
+        }
+    }
+}
+
+// MARK: - Move breaks
+
+private struct BreakSection: View {
+    let model: AppModel
+
+    var body: some View {
+        let streak = model.breaks.streakSeconds(at: model.clock)
+        let due = model.breaks.wantsMark(at: model.clock)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("🚶").font(.title3)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(streak > 0 ? "\(Format.duration(streak)) at the Mac since a break" : "On a break")
+                        .font(.callout.weight(.medium)).monospacedDigit()
+                    Text("Moves today: \(model.movesToday) · reminder after \(model.breaks.streakMinutes) min")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                if !due { Button("Move now") { model.showBreak() } }
+            }
+            if due {
+                let move = model.breaks.move
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(move.title).font(.callout.weight(.medium))
+                    Text(move.how).font(.caption).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                HStack {
+                    Button("I did it") { model.breakDone() }.buttonStyle(.borderedProminent)
+                    Button("Another") { model.breaks.swap() }
+                    Spacer()
+                    Button("Not today") { model.breakNotToday() }
+                }
+                .controlSize(.small)
             }
         }
     }

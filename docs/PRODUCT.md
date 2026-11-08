@@ -20,6 +20,11 @@ From the kickoff (2026-10-29):
 > Decide yourself. The smarter the system - better. It should AI-native focus app - like
 > Forest, but AI-native
 
+From a later request (2026-11-05):
+
+> Let's add to Vago features to remind me to do some exercises when i work non-stop with my
+> laptop (more than 90 minutes, for example) - it can be integrated with Iron-U or without it
+
 From the 2026 goals list: "stop losing time on scrolling social medias and procrastinating".
 
 ## What each part serves
@@ -34,6 +39,7 @@ From the 2026 goals list: "stop losing time on scrolling social medias and procr
 | 30-minute floor | "not to spend more than 30 min on procrastination a day" |
 | Focus sessions that grow a tree | "like Forest, but AI-native" |
 | iCloud totals across devices | "across my devices" |
+| Move breaks (Mac) | "remind me to do some exercises when i work non-stop with my laptop (more than 90 minutes, for example)" |
 
 ## Buckets
 
@@ -94,6 +100,23 @@ Like Garmin's auto step goal, but the limit moves down:
 - More than 60 seconds of procrastination wilts the tree 🥀. The session still counts as
   focus time up to that point.
 - The garden counts this week's trees.
+
+## Move breaks (Mac)
+
+- A **streak** is unbroken time at the Mac, whatever the app. Five minutes away (no input,
+  locked, asleep) is a break: the next use starts a new streak.
+- After **90 minutes** (45, 60, 75 or 120 in Settings) a floating panel names one exercise of
+  2 to 3 minutes with exact reps: squats, desk push-ups, a hip flexor stretch, a walk… No
+  equipment, no floor. The moves rotate.
+- Buttons: **I did it** (counts the move, starts a new streak), **Another** (the next move),
+  **Later** (asks again in 15 minutes).
+- A panel nobody answers closes after 90 seconds and asks once more 25 minutes later. After two
+  unanswered panels it stops for this streak; only 🚶 stays in the menu bar. It never grows louder.
+- It waits during a focus session and while the microphone is in use (a call), then one more
+  minute, then until the next app switch (at most 3 minutes).
+- The popover shows the time since the last break, today's moves, and **Not today**.
+- No Iron U link yet: Iron U has no way to log a workout from another app, and a jump to another
+  app is where a break gets dropped. Revisit when Iron U can take a logged move.
 
 ## Day
 

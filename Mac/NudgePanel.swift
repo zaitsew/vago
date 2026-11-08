@@ -9,6 +9,8 @@ final class NudgePanel {
         var id: String { title }
         var title: String
         var prominent: Bool
+        /// True when the action shows the next panel itself, so the tap must not close it.
+        var keepsOpen = false
         var action: @MainActor () -> Void
     }
 
@@ -24,13 +26,17 @@ final class NudgePanel {
     private var panel: Panel?
     private var dismissTask: Task<Void, Never>?
     private(set) var isShowing = false
+    /// What the panel on screen is for ("nudge", "break", "toast"); nil when nothing shows.
+    private(set) var tag: String?
 
-    func show(title: String, subtitle: String?, buttons: [Button], seconds: Double = 25) {
+    /// Shows the panel. `timedOut` runs when it closes by itself after `seconds`, unanswered.
+    func show(title: String, subtitle: String?, detail: String? = nil, buttons: [Button], seconds: Double = 25,
+              tag: String = "nudge", timedOut: (@MainActor () -> Void)? = nil) {
         close()
-        let view = NudgeView(title: title, subtitle: subtitle, buttons: buttons.map { button in
+        let view = NudgeView(title: title, subtitle: subtitle, detail: detail, buttons: buttons.map { button in
             Button(title: button.title, prominent: button.prominent) { [weak self] in
+                if !button.keepsOpen { self?.close() }
                 button.action()
-                self?.close()
             }
         })
         let host = Host(rootView: view)
@@ -52,9 +58,12 @@ final class NudgePanel {
         panel.orderFrontRegardless()
         self.panel = panel
         isShowing = true
+        self.tag = tag
         dismissTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(seconds))
-            if !Task.isCancelled { self?.close() }
+            guard !Task.isCancelled else { return }
+            self?.close()
+            timedOut?()
         }
     }
 
@@ -64,6 +73,7 @@ final class NudgePanel {
         panel?.orderOut(nil)
         panel = nil
         isShowing = false
+        tag = nil
     }
 
     /// Top centre of the screen the pointer is on, just under the menu bar.
@@ -78,6 +88,7 @@ final class NudgePanel {
 private struct NudgeView: View {
     var title: String
     var subtitle: String?
+    var detail: String?
     var buttons: [NudgePanel.Button]
 
     var body: some View {
@@ -86,6 +97,10 @@ private struct NudgeView: View {
                 Text(title).font(.headline)
                 if let subtitle {
                     Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                }
+                if let detail {
+                    Text(detail).font(.callout).frame(maxWidth: 280, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             HStack(spacing: 8) {
