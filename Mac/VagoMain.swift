@@ -27,8 +27,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let model = AppModel()
         let status = StatusItemController(model: model)
-        let nudger = Nudger { [weak model] key, bucket in model?.answerNudge(key: key, as: bucket) }
+        let nudger = Nudger()
         model.nudger = nudger
+        model.openWindow = { [weak status] window in
+            NSApp.activate()
+            status?.open(window)
+        }
         model.onChange = { [weak status] in status?.update() }
         model.attachSync()
         let tracker = Tracker(model: model)

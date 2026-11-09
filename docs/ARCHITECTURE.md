@@ -216,8 +216,9 @@ public enum Readout { public static func short(seconds: Int, limitMinutes: Int) 
 - **Corrections**: `correctCurrent(as:)` (the popover's Wrong?) and `correctCall(_:as:)` (the Day
   window) learn a `.review` rule, move the sessions' seconds hour by hour with `DeviceDay.move`,
   and call `JudgeAudit.corrected(on:)`. Unsure calls stay in `reviewPending` until corrected.
-- **Nudge**: "Work or scroll?" only for a mixed place with an unsure call after 60 seconds in
-  front, at most once per place per day. The focus-session distraction nudge is unchanged.
+- **Nudge**: no daytime question about a place. `AppModel.considerEveningReview` offers the
+  review once per day from 20:00 when `calls` has unsure items; **Review** opens the Day window.
+  The focus-session distraction nudge is unchanged.
 - **Menu bar**: an `NSStatusItem` whose attributed title is the mood emoji and the productive
   share (`😄 92%`), tinted by `Mood`. During focus it shows the stage emoji and the minutes left.
   Right click opens a menu: Day, Settings…, Quit.

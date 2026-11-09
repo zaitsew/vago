@@ -1,61 +1,39 @@
 import Foundation
 import VagoKit
 
-/// Decides when to ask "Work or scroll?" and shows the floating panel.
+/// Shows the floating panel: the focus nudge, the move reminder, toasts and the evening review.
 ///
-/// Vago decides on its own, so it asks rarely. Two cases: the front place is ambiguous, the
-/// classifier is unsure, and the owner has stayed on it for a minute (at most once per place per
-/// day); or the owner hits a distraction during a focus session (at most once per site in 10
-/// minutes). Answers are held by the model for the rest of the day.
+/// Vago never asks during the day whether a place is work. A place it is unsure about counts as
+/// neutral and waits in "Vago's calls"; once in the evening, if any are waiting, one panel offers
+/// to review them (`AppModel.considerEveningReview`). The one daytime panel about a place is the
+/// focus nudge: the owner started the session, and a clear distraction puts it at risk (at most
+/// once per site in 10 minutes).
 @MainActor
 final class Nudger {
     static let cooldown: TimeInterval = 10 * 60
-    static let dwellSeconds: TimeInterval = 60
 
     private let panel = NudgePanel()
     private var lastShown: [String: Date] = [:]
-    private var askedToday: Set<String> = []
-    private var dwellKey: String?
-    private var dwellSince = Date()
-    private let answer: @MainActor (String, Bucket) -> Void
+    private var lastKey: String?
 
-    init(answer: @escaping @MainActor (String, Bucket) -> Void) {
-        self.answer = answer
-    }
-
-    func consider(key: String, label: String, classification c: Classification, answered: Bool, focus: FocusSession?, now: Date) {
-        if key != dwellKey {
-            dwellKey = key
-            dwellSince = now
+    func consider(key: String, label: String, classification c: Classification, focus: FocusSession?, now: Date) {
+        if key != lastKey {
+            lastKey = key
             if panel.tag == "nudge" { panel.close() }  // the owner has moved on
         }
-        guard !answered, !panel.isShowing else { return }
-
-        let growing = focus?.state == .growing
-        if c.ambiguous && c.unclear {
-            // Ambiguous and unsure: ask once a day, after a minute on the place, never for a passing tab.
-            guard !askedToday.contains(key), now.timeIntervalSince(dwellSince) >= Self.dwellSeconds else { return }
-            askedToday.insert(key)
-            lastShown[key] = now
-            let title = growing ? "\(focus?.stage(at: now) ?? "🌱") at risk — work or scroll?" : "Work or scroll?"
-            panel.show(title: title, subtitle: label, buttons: [
-                .init(title: "Work", prominent: true) { [answer] in answer(key, .productive) },
-                .init(title: "Scroll", prominent: false) { [answer] in answer(key, .procrastination) },
-            ])
-        } else if growing, c.bucket == .procrastination {
-            // A clear distraction in the middle of a focus session: the first second is enough.
-            if let last = lastShown[key], now.timeIntervalSince(last) < Self.cooldown { return }
-            lastShown[key] = now
-            panel.show(title: "\(focus?.stage(at: now) ?? "🌱") at risk — back to work?", subtitle: label, buttons: [
-                .init(title: "Back to work", prominent: true) {},
-                .init(title: "Scroll", prominent: false) {},
-            ])
-        }
+        guard !panel.isShowing, focus?.state == .growing, c.bucket == .procrastination else { return }
+        // A clear distraction in the middle of a focus session: the first second is enough.
+        if let last = lastShown[key], now.timeIntervalSince(last) < Self.cooldown { return }
+        lastShown[key] = now
+        panel.show(title: "\(focus?.stage(at: now) ?? "🌱") at risk — back to work?", subtitle: label, buttons: [
+            .init(title: "Back to work", prominent: true) {},
+            .init(title: "Scroll", prominent: false) {},
+        ])
     }
 
-    /// Clears the dwell timer and hides the panel (locked, idle, new focus session).
+    /// Hides the panel (locked, idle, new focus session).
     func reset() {
-        dwellKey = nil
+        lastKey = nil
         panel.close()
     }
 
@@ -80,16 +58,33 @@ final class Nudger {
         )
     }
 
-    /// True while a "Work or scroll?" question waits for an answer.
-    var showingNudge: Bool { panel.tag == "nudge" }
+    /// True while the focus nudge or the evening review is on screen.
+    var showingNudge: Bool { panel.tag == "nudge" || panel.tag == "review" }
+
+    /// True while any panel is on screen.
+    var isShowing: Bool { panel.isShowing }
+
+    /// The evening review offer: once a day, only when Vago has unsure calls waiting.
+    /// Stays a minute; closing by itself counts as "Not today".
+    func showEveningReview(count: Int, review: @escaping @MainActor () -> Void) {
+        let places = count == 1 ? "1 place" : "\(count) places"
+        panel.show(
+            title: "Vago was unsure about \(places) today",
+            subtitle: "Work or waste? Each answer becomes a rule.",
+            buttons: [
+                .init(title: "Review", prominent: true, action: review),
+                .init(title: "Not today", prominent: false) {},
+            ],
+            seconds: 60, tag: "review"
+        )
+    }
 
     func closeBreak() {
         if panel.tag == "break" { panel.close() }
     }
 
-    /// A new day: every place may be asked once again.
+    /// A new day: the focus nudge's cooldowns start over.
     func forgetDay() {
         lastShown = [:]
-        askedToday = []
     }
 }

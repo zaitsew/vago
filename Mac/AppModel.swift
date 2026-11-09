@@ -90,6 +90,10 @@ final class AppModel {
     @ObservationIgnored var widgetLast: (day: DayKey?, percent: Int?, written: Date, reloaded: Date) =
         (nil, nil, .distantPast, .distantPast)
     @ObservationIgnored var nudger: Nudger?
+    /// Opens the Day or Settings window (set by the app delegate).
+    @ObservationIgnored var openWindow: (@MainActor (AppWindow) -> Void)?
+    /// The day the evening review was last offered; at most once per day.
+    @ObservationIgnored var eveningReviewOffered: DayKey?
     @ObservationIgnored var sync: CloudSync?
     @ObservationIgnored var breakLastKey: String?
     @ObservationIgnored var breakDueSince: Date?
