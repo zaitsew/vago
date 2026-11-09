@@ -11,7 +11,7 @@ enum EveningReviewWindow {
     static let limit = 5
 
     static func items(_ model: AppModel) -> [CallItem] {
-        Array(model.calls.filter(\.unsure).sorted { $0.seconds > $1.seconds }.prefix(limit))
+        Array(model.allCalls.filter(\.unsure).sorted { $0.seconds > $1.seconds }.prefix(limit))
     }
 
     /// A fresh window that holds today's unsure places as they are now.

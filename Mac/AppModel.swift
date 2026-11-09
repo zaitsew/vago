@@ -255,7 +255,11 @@ final class AppModel {
 
     /// Vago's calls today: places the AI judged or was unsure about, grouped by site or app,
     /// largest first. Rule and answer sessions are not calls; corrected ones stay, marked.
-    var calls: [CallItem] {
+    var calls: [CallItem] { Array(allCalls.prefix(8)) }
+
+    /// Every call today, largest first, uncapped: the evening review and its count read this, so
+    /// an unsure place behind eight larger sure ones is not lost.
+    var allCalls: [CallItem] {
         let pending = Set(reviewPending)
         var groups: [String: CallItem] = [:]
         var best: [String: Int] = [:]
@@ -276,7 +280,7 @@ final class AppModel {
             }
             groups[key] = item
         }
-        return groups.values.sorted { $0.seconds > $1.seconds }.prefix(8).map { item in
+        return groups.values.sorted { $0.seconds > $1.seconds }.map { item in
             var item = item
             if item.corrected { item.unsure = false }
             return item

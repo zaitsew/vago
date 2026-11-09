@@ -207,7 +207,7 @@ extension AppModel {
     static let eveningReviewHour = 20
 
     /// Unsure calls still waiting for the owner, as the Day window lists them.
-    var unsureCallCount: Int { calls.filter(\.unsure).count }
+    var unsureCallCount: Int { allCalls.filter(\.unsure).count }
 
     /// The one question Vago asks about places: in the evening, once per day, and only when
     /// some calls are unsure. Held during focus, a call (microphone in use) and another panel.
