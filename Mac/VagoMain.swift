@@ -29,10 +29,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let status = StatusItemController(model: model)
         let nudger = Nudger()
         model.nudger = nudger
-        model.openWindow = { [weak status] window in
-            NSApp.activate()
-            status?.open(window)
-        }
         model.onChange = { [weak status] in status?.update() }
         model.attachSync()
         let tracker = Tracker(model: model)

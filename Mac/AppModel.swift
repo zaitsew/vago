@@ -90,9 +90,7 @@ final class AppModel {
     @ObservationIgnored var widgetLast: (day: DayKey?, percent: Int?, written: Date, reloaded: Date) =
         (nil, nil, .distantPast, .distantPast)
     @ObservationIgnored var nudger: Nudger?
-    /// Opens the Day or Settings window (set by the app delegate).
-    @ObservationIgnored var openWindow: (@MainActor (AppWindow) -> Void)?
-    /// The day the evening review was last offered; at most once per day.
+    /// The day the evening review was last offered (persisted): at most once per day.
     @ObservationIgnored var eveningReviewOffered: DayKey?
     @ObservationIgnored var sync: CloudSync?
     @ObservationIgnored var breakLastKey: String?
@@ -116,6 +114,7 @@ final class AppModel {
         ledger = state.ledger
         sessions = state.sessions
         reviewPending = state.reviewPending
+        eveningReviewOffered = state.eveningReviewOffered
         overrides = state.overridesDay == day ? state.overrides : [:]
         focus = state.focus
         focusLog = state.focusLog
@@ -189,6 +188,7 @@ final class AppModel {
         s.today = today
         s.sessions = sessions
         s.reviewPending = reviewPending
+        s.eveningReviewOffered = eveningReviewOffered
         s.overrides = overrides
         s.overridesDay = today.day
         s.focus = focus

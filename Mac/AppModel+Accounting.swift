@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import VagoKit
 
@@ -221,7 +222,11 @@ extension AppModel {
         let count = unsureCallCount
         guard count > 0 else { return }
         eveningReviewOffered = today.day
-        nudger?.showEveningReview(count: count) { [weak self] in self?.openWindow?(.day) }
+        dirty = true
+        nudger?.showEveningReview(count: count) { [weak self] in
+            NSApp.activate()                       // the panel does not activate Vago
+            self?.openWindow?(.day)
+        }
     }
 
     /// "Wrong?" on the popover's Now line: today's time on the place in front moves to `bucket`,
