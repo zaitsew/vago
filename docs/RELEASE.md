@@ -91,7 +91,7 @@ cannot set Family Controls or App Group membership):
 
 ### Launch crash on iOS betas (build 3)
 
-TestFlight crash feedback of 2026-11-09 (iPhone 15 Pro Max, iOS 27.2 beta 24B5084k):
+TestFlight crash feedback of 2026-11-09 (iOS 27.2 beta 24B5084k):
 `EXC_BAD_ACCESS`, `pc = 0`, in `CloudSync.push` at the `Date >=` comparison. In the 27.2 SDK,
 Foundation's `Date.>=` and `Date.<=` are `@backDeployed(before: iOS 27.2)`. The thunk compiled
 into the app calls the system's copy when the OS says 27.2 or later; the 27.2 betas say so but
