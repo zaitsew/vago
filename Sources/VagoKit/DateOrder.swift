@@ -7,7 +7,7 @@ import Foundation
 /// iOS 27.2 betas do not have it: the call jumps to address 0 and the app dies. That was the
 /// launch crash of Vago 0.1.0 (3) on an iPhone with iOS 27.2 beta 24B5084k
 /// (`CloudSync.push`, TestFlight crash feedback of 2026-11-09). `./check.sh` fails when a built
-/// iPhone binary contains a back-deployment thunk again.
+/// iPhone binary weak-imports a symbol nobody reviewed (scripts/check-backdeploy.sh).
 extension Date {
     /// `self >= other`, compared as seconds since the reference date.
     @inlinable public func isAtOrAfter(_ other: Date) -> Bool {

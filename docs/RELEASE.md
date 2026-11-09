@@ -99,8 +99,10 @@ do not have it, so the call jumps to address 0. The simulator (iOS 27.0) takes t
 path and cannot show the crash.
 
 - The code compares dates with `isAtOrAfter` / `isAtOrBefore` (`Sources/VagoKit/DateOrder.swift`).
-- `./check.sh` runs `scripts/check-backdeploy.sh` on the iPhone build and fails on any
-  back-deployment thunk, so a new back-deployed API cannot reach a build unnoticed.
+- `./check.sh` runs `scripts/check-backdeploy.sh` on the iPhone build. It lists every weak
+  import (an API newer than the deployment target) and fails on one that is not in
+  `scripts/weak-imports.allow`. A new entry needs a look at the SDK's availability first: an API
+  introduced in, or back-deployed before, an OS version still in beta is this crash.
 - The crash log is read through the App Store Connect API:
   `GET /v1/apps/6828551197/betaFeedbackCrashSubmissions`, then `…/{id}/crashLog`.
 
