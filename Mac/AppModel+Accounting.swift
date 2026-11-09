@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import VagoKit
 
@@ -6,7 +7,7 @@ extension AppModel {
 
     /// Counts `seconds` of use of `obs`: classify with the judge's context, let the audit and the
     /// verdict memory see the call, add to today's totals, grow the focus tree, extend or open a
-    /// session, and let the nudger decide whether to ask.
+    /// session, let the nudger guard a focus session, and offer the evening review once.
     func process(_ obs: ActivitySample, seconds: Int, now: Date) async {
         rollIfNeeded(now)
         pause = nil
@@ -33,8 +34,9 @@ extension AppModel {
         let current = NowPlace(key: key, label: label, sample: obs, bucket: c.bucket, reason: c.reason,
                                source: c.source, unclear: c.unclear)
         if self.now != current { self.now = current }
-        nudger?.consider(key: key, label: label, classification: c, answered: answer != nil, focus: focus, now: now)
+        nudger?.consider(key: key, label: label, classification: c, focus: focus, now: now)
         noteBreakActivity(key: key, lastInput: Self.lastInput(for: obs, now: now), now: now)
+        considerEveningReview(now: now)
         onChange?()
     }
 
@@ -146,6 +148,7 @@ extension AppModel {
         place = nil
         previousPlace = nil
         nudger?.forgetDay()
+        eveningReviewOffered = nil
         limit.roll(to: day, ledger: ledger)
         let cutoff = day.adding(days: -60)
         ledger.days = ledger.days.filter { $0.value.day >= cutoff }
@@ -198,15 +201,32 @@ extension AppModel {
 
     // MARK: Answers and corrections
 
-    /// A "Work" or "Scroll" tap on the floating nudge: counts for the rest of today only.
-    func answerNudge(key: String, as bucket: Bucket) {
-        overrides[key] = bucket
-        let ids = reviewPending.filter { id in
-            sessions.first { $0.id == id }.map { SiteKey.of($0.sample.sample) == key } ?? false
+    // MARK: Evening review
+
+    /// From this local hour on, Vago offers once to review the day's unsure calls.
+    static let eveningReviewHour = 20
+
+    /// Unsure calls still waiting for the owner, as the Day window lists them.
+    var unsureCallCount: Int { calls.filter(\.unsure).count }
+
+    /// The one question Vago asks about places: in the evening, once per day, and only when
+    /// some calls are unsure. Held during focus, a call (microphone in use) and another panel.
+    func considerEveningReview(now: Date) {
+        // A day runs 04:00 to 04:00, so the hours after midnight are still this day's evening.
+        let hour = Calendar.current.component(.hour, from: now)
+        guard eveningReviewOffered != today.day,
+              hour >= Self.eveningReviewHour || hour < 4,
+              focus?.state != .growing,
+              nudger?.isShowing == false,
+              !Microphone.inUse() else { return }
+        let count = unsureCallCount
+        guard count > 0 else { return }
+        eveningReviewOffered = today.day
+        dirty = true
+        nudger?.showEveningReview(count: count) { [weak self] in
+            NSApp.activate()                       // the panel does not activate Vago
+            self?.openWindow?(.day)
         }
-        settle(ids, as: bucket)
-        commit(now: Date())
-        onChange?()
     }
 
     /// "Wrong?" on the popover's Now line: today's time on the place in front moves to `bucket`,

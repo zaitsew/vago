@@ -123,9 +123,14 @@ the rules from corrections and the `.auto` rules; built-ins and the owner's own 
   a correction. Settings and Vago's calls show "held".
 - `VerdictMemory` turns the same sure verdict on an unknown place on three days into an `.auto`
   rule, so the judge is asked less and the answer stays put.
-- A floating panel asks "Work or scroll?" only when the place is mixed, the call is unsure, and
-  you have stayed on it for a minute; at most once per place per day. During a focus session a
-  clear distraction shows "at risk — back to work?" at once. Answers last until 04:00.
+- Vago never asks during the day whether a place is work. An unsure call counts as neutral and
+  waits in Vago's calls. From 20:00 (until the 04:00 day change), once per day and only when some
+  calls are unsure, a panel says "Vago was unsure about N places today" with **Review** (opens the
+  Day window) and **Not today**. It waits during focus, a call and another panel, and closes by
+  itself after a minute.
+- During a focus session a clear distraction shows "at risk — back to work?" at once, at most
+  once per site in 10 minutes. The owner started the session, so this is the one daytime panel
+  about a place.
 
 ## Move breaks
 

@@ -18,6 +18,8 @@ struct PersistedState: Codable, Sendable {
     var sessions: [Session] = []
     /// Ids in `sessions` the classifier was unsure about and the owner has not corrected.
     var reviewPending: [UUID] = []
+    /// The day the evening review panel was last offered.
+    var eveningReviewOffered: DayKey?
     /// Day-scoped answers from the intent nudge, keyed by site or bundle id.
     var overrides: [String: Bucket] = [:]
     var overridesDay: DayKey?
@@ -44,6 +46,7 @@ struct PersistedState: Codable, Sendable {
         today = try c.decodeIfPresent(DeviceDay.self, forKey: .today)
         sessions = try c.decodeIfPresent([Session].self, forKey: .sessions) ?? []
         reviewPending = try c.decodeIfPresent([UUID].self, forKey: .reviewPending) ?? []
+        eveningReviewOffered = try c.decodeIfPresent(DayKey.self, forKey: .eveningReviewOffered)
         overrides = try c.decodeIfPresent([String: Bucket].self, forKey: .overrides) ?? [:]
         overridesDay = try c.decodeIfPresent(DayKey.self, forKey: .overridesDay)
         focus = try c.decodeIfPresent(FocusSession.self, forKey: .focus)
@@ -55,7 +58,7 @@ struct PersistedState: Codable, Sendable {
 
     private enum Keys: String, CodingKey {
         case onboarded, goals, customRules, limit, ledger, today, sessions, reviewPending
-        case overrides, overridesDay, focus, focusLog, breaks, judgeAudit, verdictMemory
+        case overrides, overridesDay, focus, focusLog, breaks, judgeAudit, verdictMemory, eveningReviewOffered
     }
 }
 

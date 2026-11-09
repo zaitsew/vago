@@ -95,8 +95,11 @@ device, one stacked cell per hour.
 4. **Corrections, not reviews.** Vago does not wait for answers. Its calls for the day are
    listed in the Mac's Day window ("Vago's calls") with the AI's reason; one tap corrects one,
    moves its minutes, and becomes a rule. The popover's **Wrong?** does the same for the place
-   in front. On the Mac, "Work or scroll?" is asked only for a mixed place Vago is unsure about
-   after a minute on it, at most once per place per day.
+   in front. On the Mac, Vago never asks during the day whether a place is work: an unsure
+   place counts as neutral and waits in Vago's calls. From 20:00, once per day and only when
+   some calls are unsure, one panel says "Vago was unsure about N places today" and **Review**
+   opens the Day window. Owner's words, 2026-10-29: the Mac tool "distracts me a bit when asks
+   on every website if I'm working or not".
 5. **Learned rules.** The same sure verdict (0.85 or more) on a place nothing knew, on three
    different days, becomes a rule. Never for an ambiguous place: three good YouTube days must
    not make all of YouTube work.
