@@ -155,7 +155,7 @@ public struct BreakCoach: Codable, Sendable, Equatable {
 
     /// Finished moves since `date`.
     public func moves(since date: Date) -> Int {
-        log.filter { $0.at >= date }.count
+        log.filter { $0.at.isAtOrAfter(date) }.count
     }
 
     private mutating func startStreak(at now: Date) {

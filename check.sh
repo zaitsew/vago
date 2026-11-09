@@ -88,7 +88,10 @@ if [ -f mac.yml ] && [ -f ios.yml ]; then
   fi
   xcodegen generate --quiet
   guarded xcodebuild -scheme VagoMac -destination 'platform=macOS' build CODE_SIGNING_ALLOWED=NO -quiet
-  guarded xcodebuild -scheme Vago -destination 'generic/platform=iOS Simulator' build CODE_SIGNING_ALLOWED=NO -quiet
+  guarded xcodebuild -scheme Vago -destination 'generic/platform=iOS Simulator' build CODE_SIGNING_ALLOWED=NO -quiet \
+    -derivedDataPath build/check-ios
+  # A back-deployed system API crashes on that OS version's betas (docs/RELEASE.md, build 3).
+  scripts/check-backdeploy.sh build/check-ios/Build/Products
 else
   echo "skip: app builds (mac.yml and ios.yml are not both here yet)"
 fi

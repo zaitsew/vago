@@ -18,7 +18,7 @@ enum CloudSync {
         for value in ledger.days.values where value.device == .iphone {
             let key = Ledger.key(value.day, .iphone)
             if let stored = store.object(forKey: key).flatMap({ DeviceDay(encoded: $0) }),
-               stored.updatedAt >= value.updatedAt { continue }
+               stored.updatedAt.isAtOrAfter(value.updatedAt) { continue }
             store.set(value.encoded(), forKey: key)
         }
         // Keep the store well under its 1024-key limit: drop this iPhone's keys beyond the ledger window.
