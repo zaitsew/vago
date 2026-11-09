@@ -1,7 +1,8 @@
 # Weak imports reviewed against the iPhone SDK 27.2 (scripts/check-backdeploy.sh). One per line,
 # as the script prints it. Each was introduced in a released OS version, none is @backDeployed:
 # AppIntents allowedExecutionTargets iOS 27.0; ExtensionFoundation extensionPoint iOS 26.2;
-# SwiftUI _TaskValueModifier2 (.task(id:)) iOS 26.4; _availability_version_check is #available.
+# SwiftUI _TaskValueModifier2 (.task(id:)) iOS 26.4; _availability_version_check is #available;
+# _dyld_get_dlopen_image_header (iOS 16) is the Debug build's launcher stub (simulator check).
 AppIntents | method descriptor for static AppIntent.allowedExecutionTargets.getter
 AppIntents | static AppIntent.allowedExecutionTargets.getter
 ExtensionFoundation | AppExtension.extensionPoint.getter
@@ -11,3 +12,4 @@ SwiftUI | nominal type descriptor for _TaskValueModifier2
 SwiftUI | protocol conformance descriptor for _TaskValueModifier2<A>
 SwiftUI | type metadata accessor for _TaskValueModifier2
 libSystem | _availability_version_check
+libSystem | _dyld_get_dlopen_image_header
