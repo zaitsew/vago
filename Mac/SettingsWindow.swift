@@ -31,6 +31,10 @@ final class HostedWindow {
         window.makeKeyAndOrderFront(nil)
     }
 
+    func close() {
+        window?.close()
+    }
+
     /// The window title; the Day window sets it to the date it shows.
     func setTitle(_ text: String) {
         window?.title = text
@@ -124,6 +128,15 @@ struct SettingsView: View {
                 } label: {
                     Label("Learned rules", systemImage: "brain")
                     Text("From your corrections, and from places the AI called the same way on three days.")
+                }
+            }
+
+            Section("Lab") {
+                Picker(selection: Binding(get: { model.eveningReviewStyle }, set: { model.setEveningReviewStyle($0) })) {
+                    ForEach(EveningReviewStyle.allCases, id: \.self) { Text($0.title).tag($0) }
+                } label: {
+                    Text("Evening review")
+                    Text("What Review opens: the Day window, one card at a time, or one list.")
                 }
             }
 

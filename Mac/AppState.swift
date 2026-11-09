@@ -1,6 +1,19 @@
 import Foundation
 import VagoKit
 
+/// Lab switch: what the evening panel's Review button opens.
+enum EveningReviewStyle: String, Codable, CaseIterable, Sendable {
+    case dayWindow, cards, list
+
+    var title: String {
+        switch self {
+        case .dayWindow: "Day window"
+        case .cards: "Cards"
+        case .list: "List"
+        }
+    }
+}
+
 /// Everything the Mac app keeps between launches: `~/Library/Application Support/Vago/state.json`.
 /// Only `RuleBook.customRules` is stored, never the built-ins, so a new VagoKit brings its own.
 struct PersistedState: Codable, Sendable {
@@ -20,6 +33,8 @@ struct PersistedState: Codable, Sendable {
     var reviewPending: [UUID] = []
     /// The day the evening review panel was last offered.
     var eveningReviewOffered: DayKey?
+    /// Lab: what the evening panel's Review button opens.
+    var eveningReviewStyle = EveningReviewStyle.dayWindow
     /// Day-scoped answers from the intent nudge, keyed by site or bundle id.
     var overrides: [String: Bucket] = [:]
     var overridesDay: DayKey?
@@ -47,6 +62,7 @@ struct PersistedState: Codable, Sendable {
         sessions = try c.decodeIfPresent([Session].self, forKey: .sessions) ?? []
         reviewPending = try c.decodeIfPresent([UUID].self, forKey: .reviewPending) ?? []
         eveningReviewOffered = try c.decodeIfPresent(DayKey.self, forKey: .eveningReviewOffered)
+        eveningReviewStyle = try c.decodeIfPresent(EveningReviewStyle.self, forKey: .eveningReviewStyle) ?? .dayWindow
         overrides = try c.decodeIfPresent([String: Bucket].self, forKey: .overrides) ?? [:]
         overridesDay = try c.decodeIfPresent(DayKey.self, forKey: .overridesDay)
         focus = try c.decodeIfPresent(FocusSession.self, forKey: .focus)
@@ -59,6 +75,7 @@ struct PersistedState: Codable, Sendable {
     private enum Keys: String, CodingKey {
         case onboarded, goals, customRules, limit, ledger, today, sessions, reviewPending
         case overrides, overridesDay, focus, focusLog, breaks, judgeAudit, verdictMemory, eveningReviewOffered
+        case eveningReviewStyle
     }
 }
 

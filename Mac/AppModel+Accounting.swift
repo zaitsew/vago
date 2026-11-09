@@ -225,8 +225,14 @@ extension AppModel {
         dirty = true
         nudger?.showEveningReview(count: count) { [weak self] in
             NSApp.activate()                       // the panel does not activate Vago
-            self?.openWindow?(.day)
+            guard let self else { return }
+            self.openWindow?(self.eveningReviewStyle == .dayWindow ? .day : .eveningReview)
         }
+    }
+
+    func setEveningReviewStyle(_ style: EveningReviewStyle) {
+        eveningReviewStyle = style
+        dirty = true
     }
 
     /// "Wrong?" on the popover's Now line: today's time on the place in front moves to `bucket`,

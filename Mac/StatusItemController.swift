@@ -11,6 +11,7 @@ final class StatusItemController: NSObject {
     private let popover = NSPopover()
     private lazy var settings = SettingsWindow.make(model: model)
     private lazy var day = DayWindow.make(model: model)
+    private var review: HostedWindow?
     private var shown = ""
 
     init(model: AppModel) {
@@ -58,6 +59,12 @@ final class StatusItemController: NSObject {
         switch window {
         case .day: day.show()
         case .settings: settings.show()
+        case .eveningReview:
+            // A fresh window each time: it snapshots today's unsure places when it opens.
+            review?.close()
+            let fresh = EveningReviewWindow.make(model: model)
+            review = fresh
+            fresh.show()
         }
     }
 

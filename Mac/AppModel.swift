@@ -29,8 +29,8 @@ struct NowPlace: Equatable {
     var unclear: Bool
 }
 
-/// The two windows the popover opens.
-enum AppWindow: Sendable { case day, settings }
+/// The windows the popover and the evening panel open.
+enum AppWindow: Sendable { case day, settings, eveningReview }
 
 /// Reasons the app writes into a session itself, to tell them from the AI's.
 enum CallReason {
@@ -65,6 +65,7 @@ final class AppModel {
     var breaks: BreakCoach
     var judgeAudit: JudgeAudit
     var verdictMemory: VerdictMemory
+    var eveningReviewStyle: EveningReviewStyle
 
     // MARK: Live
     var clock = Date()
@@ -122,6 +123,7 @@ final class AppModel {
         breaks = state.breaks
         judgeAudit = state.judgeAudit
         verdictMemory = state.verdictMemory
+        eveningReviewStyle = state.eveningReviewStyle
         let book = RuleBook(custom: state.customRules)
         rules = book
         today = state.today ?? DeviceDay(day: day, device: .mac, updatedAt: now)
@@ -196,6 +198,7 @@ final class AppModel {
         s.breaks = breaks
         s.judgeAudit = judgeAudit
         s.verdictMemory = verdictMemory
+        s.eveningReviewStyle = eveningReviewStyle
         return s
     }
 
