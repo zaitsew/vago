@@ -138,6 +138,10 @@ struct SettingsView: View {
                     Text("Evening review")
                     Text("What Review opens: the Day window, one card at a time, or one list.")
                 }
+                if model.eveningReviewStyle != .dayWindow {
+                    // Try a variant now; the evening panel itself shows only from 20:00.
+                    Button("Open evening review now") { model.openWindow?(.eveningReview) }
+                }
             }
 
             Section("Sync") {

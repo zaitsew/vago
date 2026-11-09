@@ -122,6 +122,7 @@ else changes: the panel shows at the same times, and **Not today** is the same.
 - **List**: the same places in one list, each with a Work / Waste picker and no preselection.
   **Done** applies the chosen answers, leaves blank rows unsure, and closes.
 
+With Cards or List chosen, **Open evening review now** opens the window at any hour, to try it.
 Both variants answer through `correctCall`, so minutes move and the place gets a rule exactly as
 in "Vago's calls". With nothing unsure, both show "Nothing to review today." and Close.
 
