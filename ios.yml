@@ -15,7 +15,7 @@ targetTemplates:
       base:
         TARGETED_DEVICE_FAMILY: "1"
         # Build number of the iPhone targets; project.yml's value (1) is shared with the Mac app.
-        CURRENT_PROJECT_VERSION: "3"
+        CURRENT_PROJECT_VERSION: "4"
         SDKROOT: iphoneos
         SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
         GENERATE_INFOPLIST_FILE: NO

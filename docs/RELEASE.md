@@ -30,8 +30,9 @@ App Store Connect record: **Vago: Focus Timer**, app id `6828551197`, SKU `vago`
 `com.zaitsew.vago`, primary language English (U.S.), created 2026-10-29. The plain name "Vago"
 was taken on the store.
 
-First build: 0.1.0 (1), uploaded 2026-10-29. The next build is 0.1.0 (2): the day view, hour
-strip and the new widget. The iPhone targets set `CURRENT_PROJECT_VERSION` in `ios.yml`; the
+First build: 0.1.0 (1), uploaded 2026-10-29. 0.1.0 (2): the day view, hour strip and the new
+widget. 0.1.0 (3), uploaded 2026-11-08, crashed at launch on iOS 27.2 betas (see "Launch crash
+on iOS betas" below). 0.1.0 (4) fixes it. The iPhone targets set `CURRENT_PROJECT_VERSION` in `ios.yml`; the
 shared value in `project.yml` stays at 1 for the Mac app. Testers: the internal group "Team" (created through
 the API, access to all builds, no beta review) with the owner's tester account. `testflight beta
 group` only makes external groups, which need beta review.
@@ -87,6 +88,23 @@ cannot set Family Controls or App Group membership):
 | `com.zaitsew.vago.shieldaction` | VagoShieldAction | Development + Distribution | yes | no |
 | `com.zaitsew.vago.report` | VagoReport | Development + Distribution | yes | no |
 | `com.zaitsew.vago.widgets` | VagoWidgets | no | yes | yes (key-value store, from build 2) |
+
+### Launch crash on iOS betas (build 3)
+
+TestFlight crash feedback of 2026-11-09 (iOS 27.2 beta 24B5084k):
+`EXC_BAD_ACCESS`, `pc = 0`, in `CloudSync.push` at the `Date >=` comparison. In the 27.2 SDK,
+Foundation's `Date.>=` and `Date.<=` are `@backDeployed(before: iOS 27.2)`. The thunk compiled
+into the app calls the system's copy when the OS says 27.2 or later; the 27.2 betas say so but
+do not have it, so the call jumps to address 0. The simulator (iOS 27.0) takes the fallback
+path and cannot show the crash.
+
+- The code compares dates with `isAtOrAfter` / `isAtOrBefore` (`Sources/VagoKit/DateOrder.swift`).
+- `./check.sh` runs `scripts/check-backdeploy.sh` on the iPhone build. It lists every weak
+  import (an API newer than the deployment target) and fails on one that is not in
+  `scripts/weak-imports.allow`. A new entry needs a look at the SDK's availability first: an API
+  introduced in, or back-deployed before, an OS version still in beta is this crash.
+- The crash log is read through the App Store Connect API:
+  `GET /v1/apps/6828551197/betaFeedbackCrashSubmissions`, then `…/{id}/crashLog`.
 
 ## Platform limits
 
