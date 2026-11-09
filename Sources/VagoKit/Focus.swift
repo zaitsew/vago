@@ -65,7 +65,7 @@ public struct FocusSession: Codable, Sendable, Equatable {
         if distractedSeconds > Self.wiltThresholdSeconds {
             state = .wilted
             endedAt = min(now, end)
-        } else if now >= end {
+        } else if now.isAtOrAfter(end) {
             state = .grown
             endedAt = end
         }
