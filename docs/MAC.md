@@ -109,6 +109,23 @@ the Accessibility and Automation states, the AI judge (on, held or unavailable),
 and the number of learned rules with **Forget learned rules…** (after a confirmation it removes
 the rules from corrections and the `.auto` rules; built-ins and the owner's own rules stay).
 
+### Lab: evening review
+
+The **Lab** section holds one picker, **Evening review**, saved in `state.json`
+(`eveningReviewStyle`). It decides what the evening panel's **Review** button opens. Nothing
+else changes: the panel shows at the same times, and **Not today** is the same.
+
+- **Day window** (default): opens the Day window, as before.
+- **Cards**: a small "Evening review" window shows one unsure place at a time (largest first, at
+  most 5): label, the AI's reason, minutes. **← Waste** and **Work →**, or the Left and Right
+  arrow keys, answer it. Progress dots on top; at the end "Done — N rules learned" and Close.
+- **List**: the same places in one list, each with a Work / Waste picker and no preselection.
+  **Done** applies the chosen answers, leaves blank rows unsure, and closes.
+
+With Cards or List chosen, **Open evening review now** opens the window at any hour, to try it.
+Both variants answer through `correctCall`, so minutes move and the place gets a rule exactly as
+in "Vago's calls". With nothing unsure, both show "Nothing to review today." and Close.
+
 ## The AI judge and the nudge
 
 - `FoundationModelsJudge` uses Apple's on-device model (`LanguageModelSession`, a `@Generable`

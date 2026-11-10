@@ -29,8 +29,8 @@ struct NowPlace: Equatable {
     var unclear: Bool
 }
 
-/// The two windows the popover opens.
-enum AppWindow: Sendable { case day, settings }
+/// The windows the popover and the evening panel open.
+enum AppWindow: Sendable { case day, settings, eveningReview }
 
 /// Reasons the app writes into a session itself, to tell them from the AI's.
 enum CallReason {
@@ -65,6 +65,7 @@ final class AppModel {
     var breaks: BreakCoach
     var judgeAudit: JudgeAudit
     var verdictMemory: VerdictMemory
+    var eveningReviewStyle: EveningReviewStyle
 
     // MARK: Live
     var clock = Date()
@@ -122,6 +123,7 @@ final class AppModel {
         breaks = state.breaks
         judgeAudit = state.judgeAudit
         verdictMemory = state.verdictMemory
+        eveningReviewStyle = state.eveningReviewStyle
         let book = RuleBook(custom: state.customRules)
         rules = book
         today = state.today ?? DeviceDay(day: day, device: .mac, updatedAt: now)
@@ -196,6 +198,7 @@ final class AppModel {
         s.breaks = breaks
         s.judgeAudit = judgeAudit
         s.verdictMemory = verdictMemory
+        s.eveningReviewStyle = eveningReviewStyle
         return s
     }
 
@@ -252,7 +255,11 @@ final class AppModel {
 
     /// Vago's calls today: places the AI judged or was unsure about, grouped by site or app,
     /// largest first. Rule and answer sessions are not calls; corrected ones stay, marked.
-    var calls: [CallItem] {
+    var calls: [CallItem] { Array(allCalls.prefix(8)) }
+
+    /// Every call today, largest first, uncapped: the evening review and its count read this, so
+    /// an unsure place behind eight larger sure ones is not lost.
+    var allCalls: [CallItem] {
         let pending = Set(reviewPending)
         var groups: [String: CallItem] = [:]
         var best: [String: Int] = [:]
@@ -273,7 +280,7 @@ final class AppModel {
             }
             groups[key] = item
         }
-        return groups.values.sorted { $0.seconds > $1.seconds }.prefix(8).map { item in
+        return groups.values.sorted { $0.seconds > $1.seconds }.map { item in
             var item = item
             if item.corrected { item.unsure = false }
             return item

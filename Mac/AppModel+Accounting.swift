@@ -207,7 +207,7 @@ extension AppModel {
     static let eveningReviewHour = 20
 
     /// Unsure calls still waiting for the owner, as the Day window lists them.
-    var unsureCallCount: Int { calls.filter(\.unsure).count }
+    var unsureCallCount: Int { allCalls.filter(\.unsure).count }
 
     /// The one question Vago asks about places: in the evening, once per day, and only when
     /// some calls are unsure. Held during focus, a call (microphone in use) and another panel.
@@ -225,8 +225,14 @@ extension AppModel {
         dirty = true
         nudger?.showEveningReview(count: count) { [weak self] in
             NSApp.activate()                       // the panel does not activate Vago
-            self?.openWindow?(.day)
+            guard let self else { return }
+            self.openWindow?(self.eveningReviewStyle == .dayWindow ? .day : .eveningReview)
         }
+    }
+
+    func setEveningReviewStyle(_ style: EveningReviewStyle) {
+        eveningReviewStyle = style
+        dirty = true
     }
 
     /// "Wrong?" on the popover's Now line: today's time on the place in front moves to `bucket`,
