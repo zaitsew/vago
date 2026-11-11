@@ -1,0 +1,72 @@
+decisions:
+  - id: 01-core-loop
+    title: "Core loop — what Vago does to change behaviour"
+    journey: "an ordinary workday: start work, drift to a feed, come back, end the day"
+    needs: []
+    status: options
+  - id: 02-primary-platform
+    title: "Primary platform — Mac or iPhone leads (D6)"
+    journey: "the same workday: where the drift happens and where Vago acts"
+    needs:
+      - 01-core-loop
+    status: open
+  - id: 03-what-counts-as-waste
+    title: "What counts as waste — the owner's list, the AI, or both; where unsure and dual-use time goes"
+    journey: "a workday with YouTube, X and Telegram used for work and for scrolling"
+    needs:
+      - 01-core-loop
+    status: open
+  - id: 04-main-number
+    title: "The main number — productive %, waste minutes against a budget, or plan kept"
+    journey: "a glance at any hour: am I on track today?"
+    needs:
+      - 01-core-loop
+      - 03-what-counts-as-waste
+    status: open
+  - id: 05-moment-of-drift
+    title: "The moment of drift — what happens when he opens a waste place, how often, how to pass"
+    journey: "mid-morning: Telegram, then a feed"
+    needs:
+      - 01-core-loop
+      - 02-primary-platform
+      - 03-what-counts-as-waste
+    status: open
+  - id: 06-start-of-work
+    title: "Start of work — plan, cue or focus session; what makes a block begin"
+    journey: "the morning: sit down, first task"
+    needs:
+      - 01-core-loop
+    status: open
+  - id: 07-end-of-day
+    title: "End of day — plan against actual, corrections, how long it may take"
+    journey: "the evening: did today go to the goals?"
+    needs:
+      - 01-core-loop
+      - 04-main-number
+    status: open
+  - id: 08-iphone-role
+    title: "The iPhone's role — shield, intent check, counting, or a viewer of the Mac day"
+    journey: the same day away from the desk
+    needs:
+      - 02-primary-platform
+      - 05-moment-of-drift
+    status: open
+  - id: 09-glance-surfaces
+    title: "Glance surfaces — what the menu bar, the popover and the widgets show, and in what order"
+    journey: every glance during the day
+    needs:
+      - 04-main-number
+      - 05-moment-of-drift
+    status: open
+  - id: 10-design-system
+    title: "Design system — type, colour, mood, shape, components"
+    journey: every screen
+    needs:
+      - 09-glance-surfaces
+    status: open
+  - id: 11-copy-motion
+    title: "Copy and motion — the voice in Russian and English, transitions"
+    journey: "every screen, by word and by movement"
+    needs:
+      - 10-design-system
+    status: open

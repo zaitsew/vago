@@ -1,0 +1,56 @@
+decision: 01-core-loop
+question: What does Vago do to change behaviour on an ordinary workday?
+journey: "an ordinary workday on the Mac (proposed primary until decision 02): start work, drift to a feed, come back, end the day"
+measure: "waste minutes per Mac day (median 18 over 6 days, limit 30) and opens of waste places per day (not recorded today)"
+options:
+  - id: guard-my-list
+    recommended: true
+    title: "Guard my list: he names up to three waste places, a 5-second pause guards only those"
+    summary: "Vago decides everything else silently; on the places he named it pauses for 5 seconds, with Close as the big button."
+    why: "The two mechanisms with the strongest evidence (friction at opening, a self-set limit) on places he chose, with no question anywhere else."
+    user_does: "Once, in two minutes: confirms up to three waste places (Vago proposes them from his own week) and a daily budget (30 minutes, his number). During the day: a 5-second pause when he opens one of them; Close (big) or Open for 5 minutes (small). After the budget, each open asks once more."
+    removes_or_moves: "The evening review leaves the loop: it stays as an optional list in the Day window, never a panel. Focus sessions stay, not promoted. Nothing removed."
+    he_pays: "Two minutes of setup; a 5-second pause several times a day on places he chose; on those three places he decides, not the AI."
+    he_gets: "Zero questions outside his list; the lever with the best measured effect; waste minutes the AI no longer has to guess for his worst places."
+    evidence:
+      - "one sec, PNAS 2023, N=280: actual opens −57% in 6 weeks; the dismiss option did most (guideline, peer-reviewed)"
+      - "Allcott et al., AER 2022: self-set limits −22 min/day (17%), 89% set them unpaid (guideline, peer-reviewed)"
+      - "InteractOut, CHI 2024: soft friction +25.4% acceptance over lockout (guideline, peer-reviewed)"
+      - "His data: Chrome is 70% of active time, so the pause must act per site, not per app (observation)"
+      - "Grok second opinion recommends the same, cut to two parts (observation)"
+    cost: "Build: a Mac pause panel on named sites and apps (the iPhone shield exists). Risk: dual-use places (Telegram, YouTube) — he can leave them off the list."
+    serves:
+      - "radically improve my productivity and decrease procrastination"
+      - "not to spend more than 30 min on procrastination a day"
+      - "distracts me a bit when asks on every website if I'm working or not"
+    conflicts:
+      - "\"let him decide for myself what is productive\": for up to three places he decides; the AI still decides everything else."
+  - id: mirror-and-teach
+    title: "Mirror and teach (today's direction): silent day, one number, evening review"
+    summary: "Vago never interrupts; it shows productive % and asks him in the evening about places it was unsure of."
+    why: "The current behaviour since zaitsew/vago#19 and #21; no new setup, no pause ever."
+    user_does: "Nothing during the day. At 20:00 one panel; Review opens up to 5 or 8 unsure places."
+    removes_or_moves: "Nothing."
+    he_pays: "Nothing in time; the waste stays where it is."
+    he_gets: "Total silence and a number."
+    evidence:
+      - "His data: 6 days, 0 focus sessions, 0 corrections, 0 rules; review reaches 5–8 of 786 unsure items today (observation)"
+      - "Zimmermann & Sobolev 2023: the tracking-only arm did not lower use (guideline, peer-reviewed)"
+    cost: "None to build. Leaves 43% of active time unknown and no lever on the waste."
+    serves:
+      - "let him decide for myself what is productive and what is not"
+      - "% of productive time"
+  - id: block-work-hours
+    title: "Block in work hours: a schedule and a blocklist"
+    summary: "During hours he sets, the listed places do not open at all."
+    why: "The strongest cut while it is on (Freedom, Cold Turkey pattern)."
+    user_does: "Sets work hours and a blocklist once; blocked places do not open in those hours; unlocking needs a deliberate step."
+    removes_or_moves: "Focus sessions become the schedule. Nothing removed."
+    he_pays: "Blocks hit work: Chrome is 70% of his active time and his work uses X, YouTube and Telegram; any exception is a fight with his own tool."
+    he_gets: "No waste on the list during work hours, while he keeps it on."
+    evidence:
+      - "InteractOut, CHI 2024: a timed lockout cut opens 17% less than soft friction and was accepted 25% less (guideline, peer-reviewed)"
+      - "Grok: a work-hours blocklist hits the browser, where his work lives, and he will turn it off (observation)"
+    cost: "Build: a Mac blocker (browser extension or network filter). Highest chance he switches it off."
+    serves:
+      - "not to spend more than 30 min on procrastination a day"
