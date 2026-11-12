@@ -13,17 +13,24 @@ extension AppModel {
         pause = nil
         let key = SiteKey.of(obs)
         let label = SiteKey.label(obs)
+        let placeKey = PlaceKey.of(obs)
+        // Vago's own popover or window in front is not a place the owner went to.
+        let ownWindow = obs.bundleID == Bundle.main.bundleIdentifier
+        if !ownWindow { leaveToggledPlace(for: placeKey) }
         let context = judgeContext(key: key, label: label, seconds: seconds, now: now)
         let answer = overrides[key]
         let c: Classification
-        if let answer {
+        if let toggled = toggles[placeKey] {
+            // The owner's toggle wins over answers, rules and the judge.
+            c = Classification(bucket: toggled, unclear: false, reason: CallReason.toggle, source: .answer)
+        } else if let answer {
             c = Classification(bucket: answer, unclear: false, reason: CallReason.answer, source: .answer)
         } else {
             c = await classifier.classify(obs, context: context)
         }
         rollIfNeeded(now)
 
-        if answer == nil { learn(from: obs, classification: c, seconds: seconds) }
+        if answer == nil, toggles[placeKey] == nil { learn(from: obs, classification: c, seconds: seconds) }
         today.add(c.bucket == .ambiguous ? .procrastination : c.bucket, seconds: seconds, at: now)
         tickFocus(bucket: c.bucket, seconds: seconds, now: now)
         record(obs, key: key, classification: c, seconds: seconds, now: now)
@@ -31,10 +38,15 @@ extension AppModel {
 
         place?.bucket = c.bucket
         place?.lastAt = now
-        let current = NowPlace(key: key, label: label, sample: obs, bucket: c.bucket, reason: c.reason,
+        let current = NowPlace(key: key, placeKey: placeKey, label: label, sample: obs, bucket: c.bucket, reason: c.reason,
                                source: c.source, unclear: c.unclear)
         if self.now != current { self.now = current }
         nudger?.consider(key: key, label: label, classification: c, focus: focus, now: now)
+        if !ownWindow {
+            if toggleTarget != current { toggleTarget = current }
+            runGuard(obs, bucket: c.bucket, now: now)
+        }
+        publishMode(now: now)
         noteBreakActivity(key: key, lastInput: Self.lastInput(for: obs, now: now), now: now)
         considerEveningReview(now: now)
         onChange?()
@@ -48,9 +60,12 @@ extension AppModel {
         currentSession = nil
         leavePlace()
         if self.now != nil { self.now = nil }
+        if toggleTarget != nil { toggleTarget = nil }
         tickFocus(bucket: .neutral, seconds: 0, now: now)
         nudger?.reset()
+        drift.idle()
         commit(now: now)
+        publishMode(now: now)
         onChange?()
     }
 
@@ -149,6 +164,8 @@ extension AppModel {
         previousPlace = nil
         nudger?.forgetDay()
         eveningReviewOffered = nil
+        if variants.toggleResets { toggles = [:] }
+        lastToggleKey = nil
         limit.roll(to: day, ledger: ledger)
         let cutoff = day.adding(days: -60)
         ledger.days = ledger.days.filter { $0.value.day >= cutoff }
@@ -206,6 +223,9 @@ extension AppModel {
     /// From this local hour on, Vago offers once to review the day's unsure calls.
     static let eveningReviewHour = 20
 
+    /// False since decision 01: no automatic evening panel. The code stays for the Day window and the Lab switch.
+    static let offersEveningReview = false
+
     /// Unsure calls still waiting for the owner, as the Day window lists them.
     var unsureCallCount: Int { allCalls.filter(\.unsure).count }
 
@@ -221,6 +241,8 @@ extension AppModel {
     /// The one question Vago asks about places: in the evening, once per day, and only when
     /// some calls are unsure. Held during focus, a call (microphone in use) and another panel.
     func considerEveningReview(now: Date) {
+        // Decision 01: the evening review left the loop. The Day window keeps its calls list.
+        guard Self.offersEveningReview else { return }
         // A day runs 04:00 to 04:00, so the hours after midnight are still this day's evening.
         let hour = Calendar.current.component(.hour, from: now)
         guard eveningReviewOffered != today.day,
