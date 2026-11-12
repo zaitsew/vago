@@ -177,7 +177,7 @@ struct PauseContent: View {
         }
         .padding(20)
         .frame(width: 300)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.separator))
         .padding(10)
     }
@@ -222,8 +222,7 @@ private struct PauseButtons: View {
             Button(action: onClose) {
                 Text("Close").frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(FilledCloseStyle())
             .disabled(!ready)
             Button("Open for \(GuardList.passMinutes) min", action: onOpen)
                 .buttonStyle(.bordered)
@@ -283,8 +282,7 @@ struct BlockContent: View {
             Button(action: onClose) {
                 Text("Close").frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(FilledCloseStyle())
             if variant == .a {
                 HoldToUnlock(fractionOverride: holdFraction, onDone: onUnlock)
             } else {
@@ -303,7 +301,7 @@ struct BlockContent: View {
         }
         .padding(20)
         .frame(width: 320)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.separator))
         .padding(10)
     }
@@ -336,5 +334,24 @@ struct HoldToUnlock: View {
             pressStart = pressing ? Date() : nil
         }
         .accessibilityLabel("Hold for 3 seconds to unlock")
+    }
+}
+
+/// The big primary button of the pause and block panels. An explicit fill, because
+/// `.borderedProminent` goes grey in a panel that is never key.
+struct FilledCloseStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 36)
+            .background(
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(Color(nsColor: .systemBlue).opacity(isEnabled ? (configuration.isPressed ? 0.8 : 1) : 0.4))
+            )
+            .contentShape(Rectangle())
     }
 }
