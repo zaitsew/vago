@@ -17,5 +17,7 @@ Settled by these words, so card 09 does not ask them again:
 Still open for card 09, with the defaults the first build uses:
 
 - Where: the Mac menu-bar icon, plus a Control Center control (macOS 26 `ControlWidget`).
-- Scope of a switch: today by default, "always" as a second tap.
+- The switch is a plain toggle, both directions, no duration (his words, 12 Nov 2026, in
+  `../01-core-loop/pick-note.md`). Open: whether a toggled place keeps its state after he leaves
+  it (variant A) or returns to its list mode (variant B).
 - States: work (green), procrastination (red), neutral (grey) when neither.

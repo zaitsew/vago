@@ -33,13 +33,30 @@ What his words settle:
 - "Controls menu": Vago's menu-bar icon on the Mac, plus a Control Center control. macOS 26
   supports third-party controls (`ControlWidget`, WidgetKit, macOS 26.0 in the SDK).
 - "Which mode is on now" is a global state (work / procrastination, neutral when neither),
-  derived from the place in front. The switch re-labels the current place: **for today** by
-  default, **always** as a second tap.
+  derived from the place in front.
 - The notification is a statement, never a question: the locked rule "no 'are you working?'
   question during the day" stands. It fires after about a minute in a waste place, at most once
   per drift, and never for a place the pause already guards (the pause is the signal).
 - Decisions 05 (moment of drift) and 09 (glance surfaces) take his words as input; see
   `input.md` in each folder.
+
+## The switch is a plain toggle — confirmed 12 Nov 2026
+
+The owner's words, verbatim:
+
+> "Надолго ли переключение - мне кажется, что я в инстаграме могу и прокрастинировать, и
+> работать с разницей в 15 мин - и это должен быть просто тумблер переключения"
+
+- One tap on the mode icon flips the place in front between work and procrastination, both
+  directions. No duration, no confirmation.
+- Time counts by the toggle's state at each second, from the moment he flips it. The same place
+  can be work now and procrastination fifteen minutes later.
+- While a place is toggled to work, its pause or block does not fire and no drift notification is
+  sent for it; flipping back restores them.
+
+Not said by him, so the two variants differ here: variant A keeps the place as he last set it
+until he flips it back; variant B returns the place to its list mode when he leaves it or at the
+start of the next day.
 
 The rule proposal written by the pick (`d373f0e0-….json`) describes option 1 only and is
 unconfirmed.
