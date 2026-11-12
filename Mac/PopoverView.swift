@@ -1,29 +1,45 @@
 import SwiftUI
 import VagoKit
 
-/// The window behind the menu-bar item. A short fixed layout: nothing expands or scrolls, so the
-/// whole popover always fits on screen. Detail lives in the Day window, settings in their own.
+/// The window behind the menu-bar item. The share, the waste limit and the footer stay fixed;
+/// the day strip (one lane per device) and the rows sit in a scroll view that is capped, so the
+/// popover never grows past the screen. Detail lives in the Day window, settings in their own.
 struct PopoverView: View {
     let model: AppModel
     static let width: CGFloat = 340
+    @State private var listHeight: CGFloat = 0
+
+    /// The most the scrolling middle may take: the visible screen height minus the fixed
+    /// header and footer (about 190 points) and a 40-point margin.
+    private var maxListHeight: CGFloat {
+        let screen = NSScreen.main?.visibleFrame.height ?? 800
+        return max(160, screen - 190 - 40)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Hero(share: model.share)
             LimitRow(model: model)
             Divider()
-            DayStrip(
-                lanes: DayStrip.lanes(model.ledger, day: model.today.day),
-                laneHeight: 18,
-                labelWidth: 40,
-                nowSlot: DayKey.hourSlot(of: model.clock)
-            )
-            Divider()
-            VStack(alignment: .leading, spacing: 10) {
-                NowRow(model: model)
-                FocusRow(model: model)
-                if model.breaks.enabled { MoveRow(model: model) }
+            ScrollView(.vertical) {
+                VStack(alignment: .leading, spacing: 12) {
+                    DayStrip(
+                        lanes: DayStrip.lanes(model.ledger, day: model.today.day),
+                        laneHeight: 18,
+                        labelWidth: 40,
+                        nowSlot: DayKey.hourSlot(of: model.clock)
+                    )
+                    Divider()
+                    VStack(alignment: .leading, spacing: 10) {
+                        NowRow(model: model)
+                        FocusRow(model: model)
+                        if model.breaks.enabled { MoveRow(model: model) }
+                    }
+                }
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { listHeight = $0 }
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(height: min(max(listHeight, 1), maxListHeight))
             Divider()
             Footer(model: model)
         }

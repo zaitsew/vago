@@ -54,8 +54,9 @@ The menu bar shows the mood for the waste limit and the productive share: `😄 
 mood. Before 15 active minutes it reads `😄 —`. During focus it shows the tree and the minutes
 left; a 🚶 follows while a move is due. Right click: Day, Settings…, Quit Vago.
 
-The popover is 340 points wide and has a fixed layout; nothing in it expands or scrolls.
-Top to bottom:
+The popover is 340 points wide. The share, the waste limit and the footer stay fixed; the day
+strip and the rows below the limit scroll when they pass the screen height (visible height
+minus 230 points), so many devices never push the popover off the screen. Top to bottom:
 
 - **Productive share** across devices in large type, tinted green, yellow or red, with
   `3h 12m work · 40m neutral · 41m waste` under it ("12 min so far" before 15 minutes).
@@ -113,7 +114,10 @@ the rules from corrections and the `.auto` rules; built-ins and the owner's own 
 
 The **Lab** section holds one picker, **Evening review**, saved in `state.json`
 (`eveningReviewStyle`). It decides what the evening panel's **Review** button opens. Nothing
-else changes: the panel shows at the same times, and **Not today** is the same.
+else changes: the panel shows at the same times, and **Not today** is the same. The panel's
+count is what the chosen variant can list (Day window: the unsure ones among its 8 rows; Cards
+and List: at most 5). When more places are unsure it says so: "Review 5 of 786 unsure places
+today".
 
 - **Day window** (default): opens the Day window, as before.
 - **Cards**: a small "Evening review" window shows one unsure place at a time (largest first, at
