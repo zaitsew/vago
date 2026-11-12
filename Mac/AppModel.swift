@@ -144,6 +144,7 @@ final class AppModel {
         eveningReviewStyle = state.eveningReviewStyle
         guardList = state.guardList
         guardState = state.guardState
+        guardState.front = nil   // no panel survives a relaunch, so the place in front pauses again
         drift = state.drift
         toggles = state.toggles
         setupOffered = state.setupOffered

@@ -41,6 +41,9 @@ extension AppModel {
     /// blocked or reported as a drift; flipping it back restores all three.
     func setToggle(_ placeKey: String, to bucket: Bucket) {
         toggles[placeKey] = bucket
+        // Forget the guarded place in front, so flipping back to waste pauses on the next second
+        // instead of treating the place as already answered.
+        guardState.front = nil
         func settled(_ place: NowPlace) -> NowPlace {
             var place = place
             place.bucket = bucket
@@ -87,7 +90,7 @@ extension AppModel {
                 place: place, overBudget: overBudget, usedMinutes: today.procrastination / 60,
                 budgetMinutes: guardList.budgetMinutes, variant: variants.pausePanel,
                 close: { [weak self] in
-                    PlaceControl.close(obs)
+                    self?.closeIfStillInFront(place)
                     self?.guardState.closed(place.id, now: Date())
                     self?.dirty = true
                 },
@@ -106,7 +109,7 @@ extension AppModel {
                 guardPanels.showBlock(
                     place: place, until: until, variant: variants.blockPanel,
                     close: { [weak self] in
-                        PlaceControl.close(obs)
+                        self?.closeIfStillInFront(place)
                         self?.guardState.closed(place.id, now: Date())
                         self?.dirty = true
                     },
@@ -121,6 +124,13 @@ extension AppModel {
         if drift.tick(Mode(bucket), guarded: listed != nil, now: now) {
             postDriftNotice(obs, now: now)
         }
+    }
+
+    /// Close acts on the place in front now, and only when it is still the guarded place: a block
+    /// may already have closed it, and the tab underneath must never be closed by mistake.
+    private func closeIfStillInFront(_ place: GuardedPlace) {
+        guard let sample = now?.sample, place.matches(sample) else { return }
+        PlaceControl.close(sample)
     }
 
     /// A statement, never a question: "Procrastination · Instagram — 12 of 30 min today".
