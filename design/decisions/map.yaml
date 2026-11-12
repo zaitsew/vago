@@ -3,7 +3,7 @@ decisions:
     title: "Core loop — what Vago does to change behaviour"
     journey: "an ordinary workday: start work, drift to a feed, come back, end the day"
     needs: []
-    status: options
+    status: picked
   - id: 02-primary-platform
     title: "Primary platform — Mac or iPhone leads (D6)"
     journey: "the same workday: where the drift happens and where Vago acts"

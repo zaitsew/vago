@@ -1,0 +1,15 @@
+{
+  "id": "d373f0e0-7106-4b13-b917-5130c5dbb6fe",
+  "date": "2026-11-12",
+  "screen": "01-core-loop",
+  "element": "",
+  "comment": "1 + 3",
+  "decision": "rule",
+  "reason": "Picked in the design cycle.",
+  "scope": "screen:01-core-loop",
+  "rule": "Core loop — what Vago does to change behaviour: Vago decides everything else silently; on the places he named it pauses for 5 seconds, with Close as the big button.",
+  "capture": "d373f0e0-7106-4b13-b917-5130c5dbb6fe",
+  "pr": "",
+  "confirmed": false,
+  "source": "design-cycle"
+}
