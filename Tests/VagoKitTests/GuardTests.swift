@@ -292,6 +292,28 @@ struct GuardTests {
         #expect(s.pausesShown[insta.id] == 1)
     }
 
+    @Test func aPlaceStillInFrontAtTheDayChangePausesAgain() {
+        var s = GuardState()
+        let l = list([insta])
+        let o = web("https://instagram.com/")
+        let late = at("2026-11-14 03:58")      // the Vago day ends at 04:00
+        check(tick(&s, o, l, late), .pause(insta, overBudget: false))
+        s.grantPass(insta.id, now: late)
+        check(tick(&s, o, l, late.addingTimeInterval(60)), .none)
+        check(tick(&s, o, l, at("2026-11-14 04:01")), .pause(insta, overBudget: false))
+    }
+
+    @Test func blockEndKeepsWallClockTimeAcrossDST() throws {
+        var madrid = Calendar(identifier: .gregorian)
+        madrid.timeZone = try #require(TimeZone(identifier: "Europe/Madrid"))
+        // 2026-03-29 is the spring change in Madrid; a Sunday block 09:00–18:00.
+        let hours = WorkHours(start: 540, end: 1080, weekdays: [1])
+        let noon = try #require(madrid.date(from: DateComponents(year: 2026, month: 3, day: 29, hour: 12)))
+        let end = try #require(hours.blockEnd(containing: noon, calendar: madrid))
+        #expect(madrid.component(.hour, from: end) == 18)
+        #expect(madrid.component(.minute, from: end) == 0)
+    }
+
     @Test func stateRoundTripsThroughJSON() throws {
         var s = GuardState()
         _ = tick(&s, web("https://instagram.com/"), list([insta]), at("2026-11-14 12:00"))

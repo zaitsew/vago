@@ -31,7 +31,8 @@ public struct WorkHours: Codable, Sendable, Equatable {
         let midnight = calendar.startOfDay(for: date)
         let crossesToTomorrow = end <= start && Self.minuteOfDay(date, calendar) >= start
         let day = crossesToTomorrow ? (calendar.date(byAdding: .day, value: 1, to: midnight) ?? midnight) : midnight
-        return calendar.date(byAdding: .minute, value: end, to: day)
+        // Set the wall-clock time rather than adding minutes, so a DST change on that day keeps 18:00 at 18:00.
+        return calendar.date(bySettingHour: end / 60, minute: end % 60, second: 0, of: day)
     }
 
     private static func minuteOfDay(_ date: Date, _ calendar: Calendar) -> Int {
@@ -217,6 +218,7 @@ public struct GuardState: Codable, Sendable, Equatable {
         defer { day = today }
         guard let day, day != today else { return }
         passes = [:]
+        front = nil                      // a place still in front at the day change pauses again
         pausesShown = [:]; closes = [:]; passesTaken = [:]; unlocks = [:]
     }
 }
