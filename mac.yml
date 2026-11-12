@@ -63,6 +63,7 @@ targets:
       - Mac/WidgetSnapshot.swift
       - Mac/DayStrip.swift
       - Mac/Style.swift
+      - Mac/ModeBridge.swift
     dependencies:
       - package: VagoKit
         product: VagoKit

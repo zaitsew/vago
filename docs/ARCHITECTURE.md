@@ -271,25 +271,56 @@ productive to work, procrastination and ambiguous to procrastination, and neutra
 - **Corrections**: `correctCurrent(as:)` (the popover's Wrong?) and `correctCall(_:as:)` (the Day
   window) learn a `.review` rule, move the sessions' seconds hour by hour with `DeviceDay.move`,
   and call `JudgeAudit.corrected(on:)`. Unsure calls stay in `reviewPending` until corrected.
-- **Nudge**: no daytime question about a place. `AppModel.considerEveningReview` offers the
-  review once per day from 20:00 when `calls` has unsure items; **Review** opens the Day window.
-  The focus-session distraction nudge is unchanged.
+- **Nudge**: no daytime question about a place. The evening review no longer opens by itself
+  (`AppModel.offersEveningReview` is false, decision 01); the Day window keeps its calls list and
+  the Lab switch can still open the review. The focus-session distraction nudge is unchanged.
+- **Core loop** (decision 01, `AppModel+Guard.swift`): every counted second `process` classifies,
+  applies the owner's toggle, then calls `runGuard`.
+  - *Toggle*: `toggles[PlaceKey]` (host for a web page, bundle id for an app) is a `Bucket`. It wins
+    over answers, rules and the judge (reason "your toggle", not a call in the Day window), and a
+    place toggled to work is never paused, blocked or reported. Time counts by the toggle from the
+    second it is flipped. Variant A keeps it until flipped back; variant B clears it when the owner
+    leaves the place and at the day change. Vago's own windows never count as leaving a place:
+    `toggleTarget` keeps the last real place while the popover has the focus.
+  - *Guard*: `GuardState.tick` with `isWork` = toggled to work and `usedSeconds` = today's waste.
+    `.pause` shows the pause panel (`GuardPanels`): 5 seconds, then **Close** (closes the tab through
+    Apple Events, Safari `close current tab of front window`, Chromium browsers `close active tab of
+    front window`, or hides the app) and **Open for 5 min** (`grantPass`). `.block` closes the tab
+    or hides the app at most once a second and shows the block panel once per entry; the deliberate
+    unlock (`GuardState.unlock`) is a 3-second hold (A) or typing the place's name (B).
+  - *Drift notice*: `DriftWatch.tick(Mode(bucket), guarded:)` per second, `idle()` when locked or
+    idle. A true result posts a local notification (`NoticeCenter`): "Procrastination · Instagram"
+    and "12 of 30 min today", a statement, never a question. Variant B adds a "Switch to work"
+    action. Authorization is asked for when setup finishes.
+  - *Setup* (`SetupWindow`): first run of the loop and later "Guarded places…" in Settings.
+    Proposals come from `GuardList.proposals(from:)` over today's sessions; up to 3 places, a mode
+    each, the budget (30) and the work hours (Mon-Fri 09:00-18:00). Done sets `guardList.enabled`.
+  - *State*: `state.json` gains `guardList`, `guardState`, `drift`, `toggles`, `variants` and
+    `setupOffered`, all with decode defaults.
+- **Design variants**: each new screen has two designs (`DesignVariants`, `Mac/Design.swift`):
+  setup, pausePanel, blockPanel, modeIcon, toggle, notice. `defaults write com.zaitsew.vago.mac
+  variant.<screen> b` is read at launch; Settings has a hidden "Design variants" section (hold
+  Option when Settings first opens, or set the `showVariants` default). Debug builds take
+  `--render-variants <dir>`: it writes PNGs of every screen in both variants from sample data and
+  exits before any state is loaded. The drift banner PNGs are mocks (`-MOCK`).
 - **Menu bar**: an `NSStatusItem` whose attributed title is the mood emoji and the productive
-  share (`😄 92%`), tinted by `Mood`. During focus it shows the stage emoji and the minutes left.
-  Right click opens a menu: Day, Settings…, Quit.
+  share (`😄 92%`), tinted by `Mood`, after a mode badge: work green, procrastination red, neutral
+  grey (variant A a symbol in a circle, B a WORK / WASTE capsule). During focus it shows the stage
+  emoji and the minutes left. Left click opens the popover. Right click opens a menu whose first
+  item is "Switch <place> to work" (or to procrastination), then Day, Settings…, Quit.
 - **Move breaks**: every counted second feeds `BreakCoach.active`. When `wantsPanel` is true
   and no focus session runs and the microphone is idle (`Microphone.inUse`, a CoreAudio device
   property; Vago never opens the microphone), the panel shows at the next app switch or after
   3 minutes. It shares `NudgePanel` with the nudge and never replaces an open nudge.
 - **Popover** (`PopoverView`): a fixed 340-point layout with no scroll view and nothing that
-  expands: the productive share across devices, mood and the waste limit, the `DayStrip`, the Now
+  expands: the mode row (badge, place in front, one Work switch), the productive share across devices, mood and the waste limit, the `DayStrip`, the Now
   line with Wrong?, focus, the move row, and Day / Settings… / Quit.
 - **Day window** (`DayWindow`, an `NSWindow` hosting SwiftUI, made once and reused): the share
   with a device filter, the large `DayStrip` with hour tooltips, top waste and top work (Mac
   sessions), and Vago's calls with a Work / Neutral / Waste correction. Earlier days from the
   ledger show the share and the strip.
 - **Settings window** (`SettingsWindow`, same host): goals, launch at login, move reminders,
-  permissions, the AI judge state, iCloud, and Forget learned rules.
+  guarded places and the guard switch, permissions, the AI judge state, iCloud, and Forget learned rules.
 - **DayStrip**: one lane per device, one stacked cell per hour (work, neutral, waste), from
   `Ledger.hours(for:devices:)`; at least 07:00–23:00.
 - **Desktop widget** (`VagoMacWidgets`, `MacWidgets/`): "Vago — today", small and medium. The
@@ -304,11 +335,18 @@ productive to work, procrastination and ambiguous to procrastination, and neutra
   yesterday's number. A tap opens `vago://day`, which the app delegate turns into the Day window.
   The widget is sandboxed and compiled with `DayStrip.swift` and `Style.swift`. On macOS a
   team-prefixed group needs no provisioning profile.
+- **Control Center control** (`VagoModeControl`, `MacWidgets/`, macOS 26 `ControlWidgetToggle`):
+  "Vago mode", on = the place in front is work, labelled with the place, tinted by mode. The app
+  writes `mode.json` (`ModeSnapshot`, `Mac/ModeBridge.swift`, compiled into both targets) into the
+  App Group and calls `ControlCenter.reloadControls` when the place or mode changes, at most every 3
+  seconds. The control's `SetValueIntent` writes `mode-request.json` and posts the Darwin
+  notification `com.zaitsew.vago.mac.mode-request`; the app (`DarwinObserver`) reads the file,
+  deletes it and applies the toggle.
 - **Signing**: the app takes its entitlements and profile from `VAGO_MAC_ENTITLEMENTS` and
   `VAGO_MAC_PROFILE`, which `install-mac.sh` sets. A command-line `CODE_SIGN_ENTITLEMENTS`
   would reach the widget target too and give it the app's entitlements.
 - **Storage**: `~/Library/Application Support/Vago/state.json` (rules, limit, sessions,
-  focus, breaks, judge audit, verdict memory). Today's `DeviceDay` is written to the key-value store every 30 seconds.
+  focus, breaks, judge audit, verdict memory, guard list and state, drift watch, toggles, variants). Today's `DeviceDay` is written to the key-value store every 30 seconds.
   `~/Library/Application Support/Vago/usage.json` holds the counters `./check.sh usage` prints.
 - **Install**: `scripts/install-mac.sh`, signed for this Mac like Knut's. No Mac App Store
   build: the tracker needs Accessibility and Apple Events, which the sandbox does not allow.
