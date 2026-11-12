@@ -8,6 +8,14 @@ enum VagoMain {
     private static let delegate = AppDelegate()
 
     static func main() {
+        #if DEBUG
+        // `--render-variants <dir>` writes the PNGs of the new screens from sample data and exits.
+        // It runs before any model exists: nothing under Application Support is read or written.
+        if let dir = RenderVariants.directory(in: CommandLine.arguments) {
+            NSApplication.shared.setActivationPolicy(.accessory)
+            exit(RenderVariants.run(into: dir) ? 0 : 1)
+        }
+        #endif
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
         app.delegate = delegate
@@ -29,6 +37,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let status = StatusItemController(model: model)
         let nudger = Nudger()
         model.nudger = nudger
+        model.notices.onSwitchToWork = { [weak model] key in model?.setToggle(key, to: .productive) }
+        model.notices.start()
+        model.startControlBridge()
         model.onChange = { [weak status] in status?.update() }
         model.attachSync()
         let tracker = Tracker(model: model)
@@ -49,6 +60,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             Permissions.requestAccessibility()
             model.markOnboarded()
             DispatchQueue.main.async { status.showPopover() }
+        }
+
+        if !model.guardList.enabled, !model.setupOffered {
+            // The first run of the core loop: pick the guarded places once.
+            model.setupOffered = true
+            model.dirty = true
+            DispatchQueue.main.async { status.open(.setup) }
         }
     }
 

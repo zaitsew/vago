@@ -18,6 +18,8 @@ struct PopoverView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            ModeRow(model: model)
+            Divider()
             Hero(share: model.share)
             LimitRow(model: model)
             Divider()
@@ -51,7 +53,7 @@ struct PopoverView: View {
 
 // MARK: - Hero: the productive share
 
-private struct Hero: View {
+struct Hero: View {
     let share: ProductiveShare
 
     var body: some View {

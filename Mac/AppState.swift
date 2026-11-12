@@ -47,6 +47,16 @@ struct PersistedState: Codable, Sendable {
     var judgeAudit = JudgeAudit()
     /// Sure verdicts on places nothing knew, on the way to an `.auto` rule.
     var verdictMemory = VerdictMemory()
+    /// The guard loop (decision 01): the guarded places, the guard's memory and the drift watch.
+    var guardList = GuardList()
+    var guardState = GuardState()
+    var drift = DriftWatch()
+    /// The owner's toggle: place key (`PlaceKey`) to work or procrastination.
+    var toggles: [String: Bucket] = [:]
+    /// Which of the two designs each new screen shows.
+    var variants = DesignVariants()
+    /// True once the first-run setup window has been shown, so it never reopens by itself.
+    var setupOffered = false
 
     init() {}
 
@@ -70,12 +80,18 @@ struct PersistedState: Codable, Sendable {
         breaks = try c.decodeIfPresent(BreakCoach.self, forKey: .breaks) ?? BreakCoach()
         judgeAudit = try c.decodeIfPresent(JudgeAudit.self, forKey: .judgeAudit) ?? JudgeAudit()
         verdictMemory = try c.decodeIfPresent(VerdictMemory.self, forKey: .verdictMemory) ?? VerdictMemory()
+        guardList = try c.decodeIfPresent(GuardList.self, forKey: .guardList) ?? GuardList()
+        guardState = try c.decodeIfPresent(GuardState.self, forKey: .guardState) ?? GuardState()
+        drift = try c.decodeIfPresent(DriftWatch.self, forKey: .drift) ?? DriftWatch()
+        toggles = try c.decodeIfPresent([String: Bucket].self, forKey: .toggles) ?? [:]
+        variants = try c.decodeIfPresent(DesignVariants.self, forKey: .variants) ?? DesignVariants()
+        setupOffered = try c.decodeIfPresent(Bool.self, forKey: .setupOffered) ?? false
     }
 
     private enum Keys: String, CodingKey {
         case onboarded, goals, customRules, limit, ledger, today, sessions, reviewPending
         case overrides, overridesDay, focus, focusLog, breaks, judgeAudit, verdictMemory, eveningReviewOffered
-        case eveningReviewStyle
+        case eveningReviewStyle, guardList, guardState, drift, toggles, variants, setupOffered
     }
 }
 

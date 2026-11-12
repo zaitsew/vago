@@ -21,6 +21,7 @@ struct CallItem: Identifiable, Equatable {
 /// What is in front right now, for the popover's "Now" line.
 struct NowPlace: Equatable {
     var key: String                   // SiteKey
+    var placeKey: String              // PlaceKey: what the owner's toggle is keyed by
     var label: String
     var sample: ActivitySample
     var bucket: Bucket
@@ -30,16 +31,17 @@ struct NowPlace: Equatable {
 }
 
 /// The windows the popover and the evening panel open.
-enum AppWindow: Sendable { case day, settings, eveningReview }
+enum AppWindow: Sendable { case day, settings, eveningReview, setup }
 
 /// Reasons the app writes into a session itself, to tell them from the AI's.
 enum CallReason {
     static let answer = "your answer today"
     static let corrected = "you corrected this"
+    static let toggle = "your toggle"
 
-    /// True for sessions a rule or an answer settled: not one of Vago's calls.
+    /// True for sessions a rule, an answer or the toggle settled: not one of Vago's calls.
     static func isSettled(_ reason: String) -> Bool {
-        reason.hasPrefix("rule: ") || reason == answer
+        reason.hasPrefix("rule: ") || reason == answer || reason == toggle
     }
 }
 
@@ -66,11 +68,17 @@ final class AppModel {
     var judgeAudit: JudgeAudit
     var verdictMemory: VerdictMemory
     var eveningReviewStyle: EveningReviewStyle
+    var guardList: GuardList
+    var toggles: [String: Bucket]
+    var variants: DesignVariants
+    var setupOffered: Bool
 
     // MARK: Live
     var clock = Date()
     var pause: PauseReason?
     var now: NowPlace?
+    /// The place the toggle and the mode icon act on: the place in front, kept while Vago's own popover has the focus.
+    var toggleTarget: NowPlace?
     /// True while `JudgeAudit` holds the judge's "work" verdicts on ambiguous places.
     var judgeHeld = false
     var accessibilityGranted = Permissions.accessibilityGranted
@@ -91,6 +99,16 @@ final class AppModel {
     @ObservationIgnored var widgetLast: (day: DayKey?, percent: Int?, written: Date, reloaded: Date) =
         (nil, nil, .distantPast, .distantPast)
     @ObservationIgnored var nudger: Nudger?
+    // The guard loop (AppModel+Guard.swift).
+    @ObservationIgnored var guardState: GuardState
+    @ObservationIgnored var drift: DriftWatch
+    @ObservationIgnored let guardPanels = GuardPanels()
+    @ObservationIgnored let notices = NoticeCenter()
+    @ObservationIgnored var blockShownFor: UUID?
+    @ObservationIgnored var lastBlockClose = Date.distantPast
+    @ObservationIgnored var lastToggleKey: String?
+    @ObservationIgnored var modeLast: (key: String, written: Date, reloaded: Date) = ("", .distantPast, .distantPast)
+    @ObservationIgnored var modeObserver: DarwinObserver?
     /// The day the evening review was last offered (persisted): at most once per day.
     @ObservationIgnored var eveningReviewOffered: DayKey?
     @ObservationIgnored var sync: CloudSync?
@@ -124,6 +142,15 @@ final class AppModel {
         judgeAudit = state.judgeAudit
         verdictMemory = state.verdictMemory
         eveningReviewStyle = state.eveningReviewStyle
+        guardList = state.guardList
+        guardState = state.guardState
+        guardState.front = nil   // no panel survives a relaunch, so the place in front pauses again
+        drift = state.drift
+        toggles = state.toggles
+        setupOffered = state.setupOffered
+        var variants = state.variants
+        variants.applyDefaults()
+        self.variants = variants
         let book = RuleBook(custom: state.customRules)
         rules = book
         today = state.today ?? DeviceDay(day: day, device: .mac, updatedAt: now)
@@ -199,6 +226,12 @@ final class AppModel {
         s.judgeAudit = judgeAudit
         s.verdictMemory = verdictMemory
         s.eveningReviewStyle = eveningReviewStyle
+        s.guardList = guardList
+        s.guardState = guardState
+        s.drift = drift
+        s.toggles = toggles
+        s.variants = variants
+        s.setupOffered = setupOffered
         return s
     }
 
@@ -219,6 +252,11 @@ final class AppModel {
             "moves_7d": breaks.moves(since: weekAgo),
             "productive_percent_today": share.percent ?? -1,
             "auto_rules": rules.rules.filter { $0.source == .auto }.count,
+            "guard_enabled": guardList.enabled ? 1 : 0,
+            "guard_pauses_today": guardState.pausesShown.values.reduce(0, +),
+            "guard_closes_today": guardState.closes.values.reduce(0, +),
+            "guard_passes_today": guardState.passesTaken.values.reduce(0, +),
+            "guard_unlocks_today": guardState.unlocks.values.reduce(0, +),
         ]
     }
 
