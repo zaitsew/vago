@@ -190,9 +190,64 @@ public struct BreakCoach: Codable, Sendable, Equatable {
     public func moves(on day: DayKey) -> Int
 }
 
+/// The guard (docs/PRODUCT.md): up to three places the owner names, each paused or blocked.
+public struct WorkHours: Codable, Sendable, Equatable {
+    public var start: Int, end: Int              // minutes after midnight; end <= start crosses midnight
+    public var weekdays: Set<Int>                // Calendar weekdays, 1 = Sunday; default 2...6, 09:00-18:00
+    public func contains(_ date: Date, calendar: Calendar) -> Bool
+    public func blockEnd(containing date: Date, calendar: Calendar) -> Date?   // nil outside work hours
+}
+public struct GuardedPlace: Codable, Sendable, Equatable, Identifiable {
+    public enum Mode: String, Codable, Sendable, CaseIterable { case pause, block }
+    public var id: UUID; public var name: String
+    public var host: String?; public var bundleID: String?   // host like Rule.host; bundle exact, case-insensitive
+    public var mode: Mode
+    public func matches(_ o: ActivitySample) -> Bool
+}
+public struct GuardList: Codable, Sendable, Equatable {
+    public static let maxPlaces = 3, passMinutes = 5, pauseSeconds = 5, defaultBudgetMinutes = 30
+    public var places: [GuardedPlace]; public var budgetMinutes: Int; public var workHours: WorkHours
+    public var enabled: Bool                     // false until setup is finished
+    public func place(for o: ActivitySample) -> GuardedPlace?
+    public mutating func add(_ p: GuardedPlace) -> Bool   // false at maxPlaces or for a listed host/bundle
+    public mutating func remove(_ id: UUID), setMode(_ id: UUID, _ mode: GuardedPlace.Mode)
+    public static func proposals(from sessions: [Session], limit: Int) -> [GuardedPlace]   // waste/ambiguous sessions by host or bundle, by seconds
+}
+public enum GuardAction: Sendable, Equatable { case none, pause(GuardedPlace, overBudget: Bool), block(GuardedPlace, until: Date?) }
+public struct GuardState: Codable, Sendable, Equatable {
+    public var passes: [UUID: Date]; public var front: UUID?; public var day: DayKey?
+    public var pausesShown, closes, passesTaken, unlocks: [UUID: Int]   // today
+    public mutating func tick(_ o: ActivitySample?, list: GuardList, isWork: Bool, usedSeconds: Int, now: Date, calendar: Calendar) -> GuardAction
+    public mutating func grantPass(_ id: UUID, now: Date), unlock(_ id: UUID, now: Date), closed(_ id: UUID, now: Date)
+    public func hasPass(_ id: UUID, now: Date) -> Bool
+}
+
+/// The one-icon mode and the "you drifted" notice.
+public enum Mode: String, Codable, Sendable, CaseIterable { case work, procrastination, neutral; public init(_ bucket: Bucket) }
+public struct DriftWatch: Codable, Sendable, Equatable {
+    public static let dwellSeconds = 60, armSeconds = 60
+    public mutating func tick(_ mode: Mode, guarded: Bool, now: Date) -> Bool   // true once per drift
+    public mutating func idle()
+}
+
 /// Formatting shared by the menu bar, widget and Live Activity: "😄 12m", "😟 28/30m".
 public enum Readout { public static func short(seconds: Int, limitMinutes: Int) -> String }
 ```
+
+## Guard and drift
+
+`GuardState.tick` runs once per counted second with the place in front. A place on the `GuardList`
+is never guarded when the owner switched it to work, or when the list is not `enabled`. In **pause**
+mode the tick returns `.pause` once when the place comes to the front without a valid pass, and once
+more when a pass ends while the place stays in front; `overBudget` is true when today's waste has
+reached the budget. In **block** mode inside work hours it returns `.block(until: end of the work
+block)` on every tick until a deliberate `unlock` gives a 5-minute pass; outside work hours a block
+place behaves as pause. `grantPass` ("Open for 5 minutes") also gives 5 minutes. `closed` clears
+`front`, so reopening the place pauses again. A new `DayKey` clears passes and the daily counters.
+`DriftWatch.tick` returns true once when 60 continuous seconds of procrastination follow at least 60
+seconds of work since the last notice: neutral seconds are ignored, a guarded place never counts
+(its pause is the signal), and `idle()` resets the streak but keeps the arming. `Mode(Bucket)` maps
+productive to work, procrastination and ambiguous to procrastination, and neutral to neutral.
 
 ## Mac app
 
