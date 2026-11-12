@@ -12,6 +12,7 @@ final class StatusItemController: NSObject {
     private lazy var settings = SettingsWindow.make(model: model)
     private lazy var day = DayWindow.make(model: model)
     private var review: HostedWindow?
+    private var setup: HostedWindow?
     private var shown = ""
 
     init(model: AppModel) {
@@ -34,7 +35,9 @@ final class StatusItemController: NSObject {
     /// Redraws the title: mood and share tinted by mood, or the focus tree and minutes left.
     func update() {
         let (text, tint) = model.menuBar
-        let key = "\(text)|\(tint?.rawValue ?? "-")"
+        let mode = model.currentMode
+        let variant = model.variants.modeIcon
+        let key = "\(text)|\(tint?.rawValue ?? "-")|\(mode.rawValue)|\(variant.rawValue)"
         guard key != shown else { return }
         shown = key
         let color: NSColor = switch tint {
@@ -45,6 +48,9 @@ final class StatusItemController: NSObject {
         }
         let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .medium)
         item.button?.attributedTitle = NSAttributedString(string: text, attributes: [.foregroundColor: color, .font: font])
+        item.button?.image = ModeBadgeImage.make(mode: mode, variant: variant, scale: NSScreen.main?.backingScaleFactor ?? 2)
+        item.button?.imagePosition = .imageLeading
+        item.button?.toolTip = "Vago · \(ModeBadge.name(mode))"
     }
 
     func showPopover() {
@@ -65,6 +71,12 @@ final class StatusItemController: NSObject {
             let fresh = EveningReviewWindow.make(model: model)
             review = fresh
             fresh.show()
+        case .setup:
+            // A fresh window each time: it starts from today's proposals and the current list.
+            setup?.close()
+            let fresh = SetupWindow.make(model: model)
+            setup = fresh
+            fresh.show()
         }
     }
 
@@ -82,6 +94,11 @@ final class StatusItemController: NSObject {
         guard let button = item.button else { return }
         popover.performClose(nil)
         let menu = NSMenu()
+        menu.autoenablesItems = false
+        let switchItem = menu.addItem(withTitle: switchTitle(), action: #selector(toggleMode), keyEquivalent: "")
+        switchItem.target = self
+        switchItem.isEnabled = model.toggleTarget != nil
+        menu.addItem(.separator())
         menu.addItem(withTitle: "Day", action: #selector(openDay), keyEquivalent: "d").target = self
         menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",").target = self
         menu.addItem(.separator())
@@ -89,6 +106,12 @@ final class StatusItemController: NSObject {
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height + 5), in: button)
     }
 
+    private func switchTitle() -> String {
+        guard let target = model.toggleTarget else { return "Switch place to work" }
+        return "Switch \(model.displayName(target)) to \(model.toggleIsWork ? "procrastination" : "work")"
+    }
+
+    @objc private func toggleMode() { model.toggleCurrent() }
     @objc private func openDay() { open(.day) }
     @objc private func openSettings() { open(.settings) }
     @objc private func quit() { NSApp.terminate(nil) }

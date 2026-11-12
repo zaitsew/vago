@@ -73,6 +73,9 @@ struct SettingsView: View {
     let model: AppModel
     @State private var draft = ""
     @State private var confirmForget = false
+    /// "Design variants" is hidden: hold Option when Settings opens, or set the `showVariants` default.
+    @State private var showVariants = NSEvent.modifierFlags.contains(.option)
+        || UserDefaults.standard.bool(forKey: "showVariants")
 
     var body: some View {
         Form {
@@ -100,6 +103,31 @@ struct SettingsView: View {
                     ForEach(BreakCoach.streakChoices, id: \.self) { Text("\($0) min at the Mac").tag($0) }
                 }
                 .disabled(!model.breaks.enabled)
+            }
+
+            Section("Guard") {
+                LabeledContent {
+                    Button("Guarded places…") { model.openWindow?(.setup) }
+                } label: {
+                    Label("Guarded places", systemImage: "shield.lefthalf.filled")
+                    Text(GuardNames.summary(model.guardList))
+                }
+                Toggle("Pause and block are on", isOn: Binding(get: { model.guardList.enabled }, set: { model.setGuardEnabled($0) }))
+                    .disabled(model.guardList.places.isEmpty)
+            }
+
+            if showVariants {
+                Section("Design variants") {
+                    ForEach(DesignScreen.allCases, id: \.self) { screen in
+                        Picker(screen.title, selection: Binding(get: { model.variants[screen] }, set: { model.setVariant(screen, $0) })) {
+                            ForEach(Variant.allCases, id: \.self) { Text($0.label).tag($0) }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    Text("Takes effect the next time the screen shows. Same as: defaults write com.zaitsew.vago.mac variant.<screen> b")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Section("Permissions") {
