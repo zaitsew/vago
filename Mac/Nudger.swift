@@ -65,11 +65,13 @@ final class Nudger {
     var isShowing: Bool { panel.isShowing }
 
     /// The evening review offer: once a day, only when Vago has unsure calls waiting.
+    /// `count` is what the review window lists; `total` is every unsure place today. When the
+    /// window cannot list them all, the title says so ("Review 5 of 786 unsure places today").
     /// Stays a minute; closing by itself counts as "Not today".
-    func showEveningReview(count: Int, review: @escaping @MainActor () -> Void) {
+    func showEveningReview(count: Int, of total: Int, review: @escaping @MainActor () -> Void) {
         let places = count == 1 ? "1 place" : "\(count) places"
         panel.show(
-            title: "Vago was unsure about \(places) today",
+            title: total > count ? "Review \(count) of \(total) unsure places today" : "Vago was unsure about \(places) today",
             subtitle: "Work or waste? Each answer becomes a rule.",
             buttons: [
                 .init(title: "Review", prominent: true, action: review),

@@ -209,6 +209,15 @@ extension AppModel {
     /// Unsure calls still waiting for the owner, as the Day window lists them.
     var unsureCallCount: Int { allCalls.filter(\.unsure).count }
 
+    /// How many unsure calls the chosen review variant lets the owner answer: the Day window
+    /// lists the eight largest calls, the other two the five largest unsure places.
+    var reviewableCallCount: Int {
+        switch eveningReviewStyle {
+        case .dayWindow: calls.filter(\.unsure).count
+        case .cards, .list: min(EveningReviewWindow.limit, unsureCallCount)
+        }
+    }
+
     /// The one question Vago asks about places: in the evening, once per day, and only when
     /// some calls are unsure. Held during focus, a call (microphone in use) and another panel.
     func considerEveningReview(now: Date) {
@@ -219,11 +228,12 @@ extension AppModel {
               focus?.state != .growing,
               nudger?.isShowing == false,
               !Microphone.inUse() else { return }
-        let count = unsureCallCount
+        let total = unsureCallCount
+        let count = reviewableCallCount
         guard count > 0 else { return }
         eveningReviewOffered = today.day
         dirty = true
-        nudger?.showEveningReview(count: count) { [weak self] in
+        nudger?.showEveningReview(count: count, of: total) { [weak self] in
             NSApp.activate()                       // the panel does not activate Vago
             guard let self else { return }
             self.openWindow?(self.eveningReviewStyle == .dayWindow ? .day : .eveningReview)
