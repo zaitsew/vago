@@ -306,12 +306,18 @@ struct SetupAdjust: View {
             }
             HStack(spacing: 4) {
                 ForEach(Self.weekdays, id: \.number) { day in
-                    Toggle(isOn: Binding(
-                        get: { draft.weekdays.contains(day.number) },
-                        set: { on in if on { draft.weekdays.insert(day.number) } else { draft.weekdays.remove(day.number) } }
-                    )) { Text(verbatim: day.name) }
-                    .toggleStyle(.button)
-                    .controlSize(.small)
+                    let on = draft.weekdays.contains(day.number)
+                    Button {
+                        if on { draft.weekdays.remove(day.number) } else { draft.weekdays.insert(day.number) }
+                    } label: {
+                        Text(verbatim: day.name)
+                            .font(.system(size: 12, weight: on ? .semibold : .regular))
+                            .foregroundStyle(on ? Color.white : Color.secondary)
+                            .frame(width: 40, height: 24)
+                            .background(Capsule().fill(on ? Color.accentColor : Color.gray.opacity(0.12)))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(on ? .isSelected : [])
                 }
             }
         }
