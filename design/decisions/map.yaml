@@ -9,7 +9,7 @@ decisions:
     journey: "the same workday: where the drift happens and where Vago acts"
     needs:
       - 01-core-loop
-    status: open
+    status: options
   - id: 03-what-counts-as-waste
     title: "What counts as waste — the owner's list, the AI, or both; where unsure and dual-use time goes"
     journey: "a workday with YouTube, X and Telegram used for work and for scrolling"
