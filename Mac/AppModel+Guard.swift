@@ -133,13 +133,13 @@ extension AppModel {
         PlaceControl.close(sample)
     }
 
-    /// A statement, never a question: "Procrastination · Instagram — 12 of 30 min today".
+    /// A statement, never a question: "Procrastination · Instagram", "18 min left of 30 today".
     private func postDriftNotice(_ obs: ActivitySample, now: Date) {
         let name = guardList.place(for: obs)?.name ?? SiteKey.label(obs)
-        notices.postDrift(
-            placeName: name, placeKey: PlaceKey.of(obs), usedMinutes: today.procrastination / 60,
-            budgetMinutes: guardList.budgetMinutes, withAction: variants.notice == .b
-        )
+        notices.post(NoticePayload.make(
+            variant: variants.notice, placeName: name, placeKey: PlaceKey.of(obs),
+            usedMinutes: today.procrastination / 60, budgetMinutes: guardList.budgetMinutes, day: today.day
+        ))
     }
 
     // MARK: Setup and settings

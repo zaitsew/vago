@@ -75,9 +75,16 @@ enum RenderVariants {
         save("toggle-off.png", CGSize(width: 340, height: 190), PopoverTopMock(label: "Instagram", mode: .procrastination))
         save("toggle-on.png", CGSize(width: 340, height: 190), PopoverTopMock(label: "Instagram", mode: .work))
 
-        // The banner is system UI: faithful mocks, named so.
-        save("notice-a-MOCK.png", CGSize(width: 420, height: 130), scale: 3, NoticeMock(withAction: false))
-        save("notice-b-MOCK.png", CGSize(width: 420, height: 170), scale: 3, NoticeMock(withAction: true))
+        // The notice: the attachment pictures are the real files; the banner is system UI, so the
+        // mock (named so) draws the exact payload next to the real picture.
+        for variant in [Variant.a, Variant.b] {
+            let payload = sampleNotice(variant)
+            let name = variant == .a ? "a" : "b"
+            save("notice-\(name)-attachment.png", CGSize(width: NoticeArt.side, height: NoticeArt.side), scale: 3, NoticeArt(payload: payload))
+            save("notice-\(name)-MOCK.png", CGSize(width: 420, height: 130), scale: 3, NoticeMock(payload: payload))
+        }
+        let over = NoticePayload.make(variant: .b, placeName: "Instagram", placeKey: "h:instagram.com", usedMinutes: 34, budgetMinutes: 30, day: DayKey(id: "2026-11-13"))
+        save("notice-b-over-attachment.png", CGSize(width: NoticeArt.side, height: NoticeArt.side), scale: 3, NoticeArt(payload: over))
         return ok
     }
 
@@ -89,6 +96,11 @@ enum RenderVariants {
             GuardedPlace(name: "YouTube", host: "youtube.com", mode: .block),
             GuardedPlace(name: "Telegram", bundleID: "ru.keepcoder.Telegram", mode: .pause),
         ]
+    }
+
+    static func sampleNotice(_ variant: Variant) -> NoticePayload {
+        NoticePayload.make(variant: variant, placeName: "Instagram", placeKey: "h:instagram.com", usedMinutes: 12,
+                           budgetMinutes: 30, day: DayKey(id: "2026-11-13"))
     }
 
     static func sampleDraft(picked: Bool) -> SetupDraft {
@@ -208,7 +220,7 @@ private struct PopoverTopMock: View {
 /// What the drift banner looks like in Notification Center. The real one is drawn by macOS; this is
 /// a mock for review, not a capture.
 private struct NoticeMock: View {
-    var withAction: Bool
+    var payload: NoticePayload
 
     var body: some View {
         ZStack {
@@ -220,27 +232,32 @@ private struct NoticeMock: View {
                     RoundedRectangle(cornerRadius: 9, style: .continuous)
                         .fill(LinearGradient(colors: [.green, .teal], startPoint: .top, endPoint: .bottom))
                         .frame(width: 38, height: 38)
-                        .overlay(Text("V").font(.system(size: 20, weight: .bold, design: .rounded)).foregroundStyle(.white))
+                        .overlay(Text(verbatim: "V").font(.system(size: 20, weight: .bold, design: .rounded)).foregroundStyle(.white))
                     VStack(alignment: .leading, spacing: 2) {
                         HStack {
-                            Text("Procrastination · Instagram").font(.system(size: 13, weight: .semibold))
+                            Text(verbatim: payload.title).font(.system(size: 13, weight: .semibold)).lineLimit(1)
                             Spacer()
-                            Text("now").font(.system(size: 11)).foregroundStyle(.secondary)
+                            Text(verbatim: "now").font(.system(size: 11)).foregroundStyle(.secondary)
                         }
-                        Text("12 of 30 min today").font(.system(size: 12))
-                        Text("Vago").font(.system(size: 11)).foregroundStyle(.secondary)
+                        if !payload.subtitle.isEmpty { Text(verbatim: payload.subtitle).font(.system(size: 12, weight: .semibold)) }
+                        if !payload.body.isEmpty { Text(verbatim: payload.body).font(.system(size: 12)) }
+                        Text(verbatim: "Vago").font(.system(size: 11)).foregroundStyle(.secondary)
                     }
+                    Spacer(minLength: 0)
+                    NoticeArt(payload: payload)
+                        .frame(width: 160, height: 160)
+                        .scaleEffect(0.3, anchor: .topTrailing)
+                        .frame(width: 48, height: 48, alignment: .topTrailing)
+                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 }
                 .padding(12)
                 .frame(width: 360)
                 .background(Color(nsColor: NSColor(white: 0.97, alpha: 0.92)), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                if withAction {
-                    Text("Switch to work")
-                        .font(.system(size: 12, weight: .medium))
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
-                        .background(Color(nsColor: NSColor(white: 0.97, alpha: 0.92)), in: Capsule())
-                }
+                Text(verbatim: "Switch to work")
+                    .font(.system(size: 12, weight: .medium))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 6)
+                    .background(Color(nsColor: NSColor(white: 0.97, alpha: 0.92)), in: Capsule())
             }
             .padding(.trailing, 30)
             .frame(maxWidth: .infinity, alignment: .trailing)
