@@ -57,6 +57,8 @@ struct PersistedState: Codable, Sendable {
     var variants = DesignVariants()
     /// True once the first-run setup window has been shown, so it never reopens by itself.
     var setupOffered = false
+    /// Waste seconds per place for the last 7 tracked days, for the setup's tiles.
+    var placeWeek = PlaceWeek()
 
     init() {}
 
@@ -86,12 +88,13 @@ struct PersistedState: Codable, Sendable {
         toggles = try c.decodeIfPresent([String: Bucket].self, forKey: .toggles) ?? [:]
         variants = try c.decodeIfPresent(DesignVariants.self, forKey: .variants) ?? DesignVariants()
         setupOffered = try c.decodeIfPresent(Bool.self, forKey: .setupOffered) ?? false
+        placeWeek = try c.decodeIfPresent(PlaceWeek.self, forKey: .placeWeek) ?? PlaceWeek()
     }
 
     private enum Keys: String, CodingKey {
         case onboarded, goals, customRules, limit, ledger, today, sessions, reviewPending
         case overrides, overridesDay, focus, focusLog, breaks, judgeAudit, verdictMemory, eveningReviewOffered
-        case eveningReviewStyle, guardList, guardState, drift, toggles, variants, setupOffered
+        case eveningReviewStyle, guardList, guardState, drift, toggles, variants, setupOffered, placeWeek
     }
 }
 

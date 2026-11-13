@@ -293,11 +293,20 @@ productive to work, procrastination and ambiguous to procrastination, and neutra
     idle. A true result posts a local notification (`NoticeCenter`): "Procrastination · Instagram"
     and "12 of 30 min today", a statement, never a question. Variant B adds a "Switch to work"
     action. Authorization is asked for when setup finishes.
-  - *Setup* (`SetupWindow`): first run of the loop and later "Guarded places…" in Settings.
-    Proposals come from `GuardList.proposals(from:)` over today's sessions; up to 3 places, a mode
-    each, the budget (30) and the work hours (Mon-Fri 09:00-18:00). Done sets `guardList.enabled`.
+  - *Setup* (`SetupWindow`): first run of the loop and later "Guarded places..." in Settings. The
+    owner taps up to 3 places that took the most time; a picked place shows its control (Pause: a
+    timer ring, "5 s wait"; Block: a lock, "until 18:00"). Variant A is a wall of tiles, B the same
+    places ranked as bars. The budget (30) and the work hours (Mon-Fri 9-18) are already set and sit
+    behind one "Change" popover; with 3 drains picked on a first run, Done works at once. Done sets
+    `guardList.enabled`. A place no tile shows is added with "Add a site".
+  - *Place week* (`PlaceWeek`, `Mac/PlaceWeek.swift`): the Ledger keeps only day totals, so the Mac
+    app keeps its own archive in `state.json`: day id, then place key (`h:host` or `b:bundleid`), then
+    waste seconds. Seconds only; no titles, no URLs beyond the host. Pruned to the last 7 tracked days
+    on every day change. The setup ranks places by it. The period line says "this week" only when 7
+    days exist, "in the last N days" before, and "today" for one day; today's sessions fill in a
+    place the archive has not seen yet. Not VagoKit: nothing in the contract changed.
   - *State*: `state.json` gains `guardList`, `guardState`, `drift`, `toggles`, `variants` and
-    `setupOffered`, all with decode defaults.
+    `setupOffered` and `placeWeek`, all with decode defaults.
 - **Design variants**: the screens still undecided have two designs (`DesignVariants`,
   `Mac/Design.swift`): setup and notice. Decided on 13 November 2026: mode icon B (the pill), toggle B,
   pause A (the card), block A (hold); their old keys in `state.json` are ignored. `defaults write com.zaitsew.vago.mac

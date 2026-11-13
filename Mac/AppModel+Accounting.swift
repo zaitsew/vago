@@ -154,6 +154,8 @@ extension AppModel {
     }
 
     func startNewDay(_ day: DayKey, now: Date) {
+        // The finished day goes into the place archive from its sessions, after any corrections.
+        placeWeek.record(PlaceWeek.waste(in: sessions), day: today.day)
         ledger.merge(today)
         today = DeviceDay(day: day, device: .mac, updatedAt: now)
         sessions = []
@@ -165,6 +167,8 @@ extension AppModel {
         nudger?.forgetDay()
         eveningReviewOffered = nil
         toggles = [:]
+        placeWeek.touch(day)
+        placeWeek.prune()
         lastToggleKey = nil
         limit.roll(to: day, ledger: ledger)
         let cutoff = day.adding(days: -60)

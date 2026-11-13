@@ -5,7 +5,7 @@
       "comment": "Empty label of a hidden picker in the setup window."
     },
     "%@ %@–%@": {
-      "comment": "Work hours. First argument: the days; then the start and end clock times. Example: Mon–Fri 09:00–18:00.",
+      "comment": "Short work hours for the setup summary. First argument: the days; then the start and end hours. Example: Mon–Fri 9–18.\nWork hours. First argument: the days; then the start and end clock times. Example: Mon–Fri 09:00–18:00.",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -87,7 +87,7 @@
       }
     },
     "%@ · %lld min a day · %@": {
-      "comment": "Settings summary of the guard. First argument: the places; second: the daily budget in minutes; third: the work hours.",
+      "comment": "Settings summary of the guard. First argument: the places; second: the daily budget in minutes; third: the work hours.\nSetup summary bar. First argument: a phrase such as 3 places; second: the daily budget in minutes; third: the work hours.",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -115,7 +115,7 @@
       "comment": "Settings: a number shown beside a control."
     },
     "%lld min a day": {
-      "comment": "Setup: the daily budget in minutes."
+      "comment": "Setup adjust card: the daily budget in minutes."
     },
     "%lld min at the Mac": {
       "comment": "Settings: choice of how long a streak at the Mac must last before a move reminder. The argument is minutes."
@@ -141,6 +141,7 @@
       "comment": "Popover: moves done today. The argument is the count."
     },
     "%lld of %lld answered": {
+      "comment": "Evening review list: how many places were answered out of the total.",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -148,8 +149,7 @@
             "value": "%1$lld of %2$lld answered"
           }
         }
-      },
-      "comment": "Evening review list: how many places were answered out of the total."
+      }
     },
     "%lld of %lld min today": {
       "comment": "Pause card status: minutes of waste used today, then the daily budget.",
@@ -163,6 +163,7 @@
       }
     },
     "%lld of %lld min waste": {
+      "comment": "Waste used today out of the daily limit, in minutes. First argument: used; second: the limit.",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -170,14 +171,13 @@
             "value": "%1$lld of %2$lld min waste"
           }
         }
-      },
-      "comment": "Waste used today out of the daily limit, in minutes. First argument: used; second: the limit."
+      }
     },
     "%lld percent": {
       "comment": "Accessibility value of a progress bar. The argument is the percentage."
     },
     "%lld places": {
-      "comment": "Evening review offer: several unsure places. The argument is the count."
+      "comment": "Evening review offer: several unsure places. The argument is the count.\nSetup summary: the number of guarded places."
     },
     "%lldh %@m": {
       "comment": "A duration of hours and minutes. First argument: hours; second: minutes with two digits. Example: 3h 12m.",
@@ -200,10 +200,16 @@
       "comment": "Popover: one move done today."
     },
     "1 place": {
-      "comment": "Evening review offer: one unsure place."
+      "comment": "Evening review offer: one unsure place.\nSetup summary: one guarded place."
+    },
+    "5 s wait": {
+      "comment": "Setup: caption under Pause. The wait before the place opens."
     },
     "A full cell is a full hour. Hover for minutes.": {
       "comment": "Day window legend hint under the day strip."
+    },
+    "A site, for example reddit.com": {
+      "comment": "Setup text-field placeholder for adding a site."
     },
     "AI held": {
       "comment": "Day window badge: the AI judge is held back."
@@ -223,11 +229,8 @@
     "Add": {
       "comment": "Setup button that adds the typed site."
     },
-    "Add %@": {
-      "comment": "Setup button that adds the place in front. The argument is the place name."
-    },
-    "Add a site, for example reddit.com": {
-      "comment": "Setup text-field placeholder."
+    "Add a site": {
+      "comment": "Setup: small button that reveals a field to add a site that is not proposed."
     },
     "All": {
       "comment": "Device filter of the Day window: every device."
@@ -250,20 +253,17 @@
     "Autonomy": {
       "comment": "Settings section heading for the AI judge and learned rules."
     },
-    "Back": {
-      "comment": "Setup button: previous step."
-    },
     "Back to work": {
       "comment": "Focus nudge button."
     },
     "Block": {
-      "comment": "Setup choice: the place is blocked in work hours."
-    },
-    "Block in work hours. It does not open in your work hours; unlocking takes a deliberate step.": {
-      "comment": "Setup explanation of the block mode."
+      "comment": "Setup: the place stays closed in work hours."
     },
     "Cancel": {
       "comment": "Button that closes a dialog or window without saving."
+    },
+    "Change": {
+      "comment": "Setup: opens the budget and work-hours card."
     },
     "Close": {
       "comment": "Big button of the pause and block cards: closes the place."
@@ -287,7 +287,7 @@
       "comment": "Mode row caption: the place in front counts as work."
     },
     "Daily budget": {
-      "comment": "Setup row label for the daily waste budget."
+      "comment": "Setup adjust card: row label for the daily waste budget."
     },
     "Daily totals are shared with the iPhone": {
       "comment": "Settings: iCloud sync detail when on."
@@ -421,9 +421,6 @@
     "Neutral": {
       "comment": "Name of the neutral mode, for the tooltip and accessibility."
     },
-    "Next": {
-      "comment": "Setup button: next step."
-    },
     "Next day": {
       "comment": "Tooltip of the next-day button in the Day window."
     },
@@ -439,7 +436,7 @@
     "Nothing in front yet": {
       "comment": "Mode row caption before any place was seen."
     },
-    "Nothing to propose yet. Add a site below.": {
+    "Nothing seen yet. Add a site you lose time on.": {
       "comment": "Setup empty state before any waste was seen."
     },
     "Nothing to review today.": {
@@ -487,16 +484,10 @@
       }
     },
     "Pause": {
-      "comment": "Setup choice: the place pauses for 5 seconds each time it opens."
+      "comment": "Setup: the place waits 5 seconds each time it opens."
     },
     "Pause and block are on": {
       "comment": "Settings switch that turns the guard on or off."
-    },
-    "Pause. A 5-second pause each time it opens, all day.": {
-      "comment": "Setup explanation of the pause mode."
-    },
-    "Pause: a 5-second pause every time it opens. Block: it stays closed in your work hours, and pauses outside them.": {
-      "comment": "Setup explanation of pause and block."
     },
     "Paused · no input": {
       "comment": "Popover status while no input was seen for two minutes."
@@ -508,6 +499,7 @@
       "comment": "Settings section heading."
     },
     "Place %lld of %lld": {
+      "comment": "Accessibility label of the progress dots in the evening review. First argument: the current place; second: the total.",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -515,8 +507,7 @@
             "value": "Place %1$lld of %2$lld"
           }
         }
-      },
-      "comment": "Accessibility label of the progress dots in the evening review. First argument: the current place; second: the total."
+      }
     },
     "Previous day": {
       "comment": "Tooltip of the previous-day button in the Day window."
@@ -574,9 +565,6 @@
     "Sites, apps and Vago's calls are kept for today only.": {
       "comment": "Day window note shown when an earlier day is chosen."
     },
-    "Step %lld of 3": {
-      "comment": "Setup progress label. The argument is the step number."
-    },
     "Stop": {
       "comment": "Popover button that stops the running focus session."
     },
@@ -597,6 +585,12 @@
     },
     "Takes effect the next time the screen shows. Same as: defaults write com.zaitsew.vago.mac variant.<screen> b": {
       "comment": "Settings note under the hidden design variants; the command stays as it is."
+    },
+    "Tap up to three places. Time spent %@.": {
+      "comment": "Setup subtitle. The argument is a period such as this week or in the last 3 days."
+    },
+    "Three is the most. Tap a picked place to swap it.": {
+      "comment": "Setup hint once three places are picked."
     },
     "Thu": {
       "comment": "Short weekday name."
@@ -661,6 +655,9 @@
     "What Review opens: the Day window, one card at a time, or one list.": {
       "comment": "Settings explanation of the evening review style picker."
     },
+    "What should Vago guard?": {
+      "comment": "Setup title."
+    },
     "Window titles of every app": {
       "comment": "Settings: Accessibility permission detail when granted."
     },
@@ -668,7 +665,7 @@
       "comment": "Accessibility label of the work switch.\nName of the work mode, for the tooltip and accessibility."
     },
     "Work hours": {
-      "comment": "Setup row label for the work hours."
+      "comment": "Setup adjust card: row label for the work hours."
     },
     "Work hours. Unlocking opens it for %lld minutes.": {
       "comment": "Block card explanation. The argument is the number of minutes an unlock lasts."
@@ -709,6 +706,9 @@
     "iPhone minutes come from Screen Time reports and can lag a few minutes.": {
       "comment": "Note under the iPhone lane of the day strip."
     },
+    "in the last %lld days": {
+      "comment": "Setup: the period the minutes on the tiles cover. The argument is the number of days kept, from 2 to 6."
+    },
     "mixed": {
       "comment": "The word for a mixed call, in lower case, used inside sentences."
     },
@@ -724,11 +724,20 @@
     "productive, all devices": {
       "comment": "Caption under the big share number in the Day window."
     },
+    "this week": {
+      "comment": "Setup: the period the minutes on the tiles cover, once 7 days are kept."
+    },
     "to": {
-      "comment": "Setup: between the start and end time of the work hours."
+      "comment": "Setup adjust card: between the start and end time of the work hours."
+    },
+    "today": {
+      "comment": "Setup: the period the minutes on the tiles cover when only today is known."
     },
     "unsure": {
       "comment": "Popover Now line: the place has no clear call yet."
+    },
+    "until %@": {
+      "comment": "Setup: caption under Block. The argument is the clock time the work hours end, such as 18:00."
     },
     "waste": {
       "comment": "The word for a waste call, in lower case, used inside sentences."

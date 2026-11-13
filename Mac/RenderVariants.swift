@@ -38,12 +38,12 @@ enum RenderVariants {
             }
         }
 
-        // Setup (the rebuild is on the next branch).
-        save("setup-a.png", CGSize(width: 480, height: 560), SetupContent(draft: sampleDraft(), variant: .a).windowBacked())
-        for step in 1...3 {
-            save("setup-b-step\(step).png", CGSize(width: 480, height: 500),
-                 SetupContent(draft: sampleDraft(), variant: .b, step: step).windowBacked())
+        // Setup: a wall of tiles (A) and ranked bars (B), picked and untouched, and the adjust card.
+        for (name, variant, size) in [("setup-a", Variant.a, CGSize(width: 600, height: 570)), ("setup-b", Variant.b, CGSize(width: 540, height: 760))] {
+            save("\(name).png", size, SetupContent(draft: sampleDraft(picked: true), variant: variant).windowBacked())
+            save("\(name)-none.png", size, SetupContent(draft: sampleDraft(picked: false), variant: variant).windowBacked())
         }
+        save("setup-adjust.png", CGSize(width: 360, height: 190), SetupAdjust(draft: sampleDraft(picked: true)).windowBacked())
 
         // Pause card: ready under budget (check) and ready over budget (exclamation, never green).
         let cardSize = CGSize(width: 560, height: 380)
@@ -91,9 +91,17 @@ enum RenderVariants {
         ]
     }
 
-    static func sampleDraft() -> SetupDraft {
-        SetupDraft(rows: samplePlaces().map { SetupRow(place: $0, selected: true) }, budget: 30, hours: WorkHours(),
-                   front: GuardedPlace(name: "Reddit", host: "reddit.com"))
+    static func sampleDraft(picked: Bool) -> SetupDraft {
+        let sample: [(GuardedPlace, Int)] = [
+            (GuardedPlace(name: "Instagram", host: "instagram.com", mode: .pause), 4980),
+            (GuardedPlace(name: "YouTube", host: "youtube.com", mode: .block), 3720),
+            (GuardedPlace(name: "Telegram", bundleID: "ru.keepcoder.Telegram", mode: .pause), 2400),
+            (GuardedPlace(name: "Reddit", host: "reddit.com", mode: .pause), 1500),
+            (GuardedPlace(name: "TikTok", host: "tiktok.com", mode: .pause), 900),
+            (GuardedPlace(name: "Netflix", host: "netflix.com", mode: .pause), 420),
+        ]
+        let rows = sample.enumerated().map { SetupRow(place: $1.0, selected: picked && $0 < 3, seconds: $1.1) }
+        return SetupDraft(rows: rows, budget: 30, hours: WorkHours(), days: 3)
     }
 
     // MARK: Drawing
