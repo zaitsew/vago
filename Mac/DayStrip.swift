@@ -84,18 +84,18 @@ struct DayStrip: View {
 
     static func tooltip(_ h: HourSlot, lane: String) -> String {
         var parts = [String(format: "%02d:00", h.clockHour), lane]
-        if h.total == 0 { return parts.joined(separator: " · ") + " · nothing" }
-        if h.productive > 0 { parts.append("\(Format.minutes(h.productive)) work") }
-        if h.neutral > 0 { parts.append("\(Format.minutes(h.neutral)) neutral") }
-        if h.procrastination > 0 { parts.append("\(Format.minutes(h.procrastination)) waste") }
+        if h.total == 0 { return parts.joined(separator: " · ") + " · " + String(localized: "nothing", comment: "Hour tooltip of the day strip when no time was counted in that hour.") }
+        if h.productive > 0 { parts.append(String(localized: "\(Format.minutes(h.productive)) work", comment: "Hour tooltip: work time in that hour. The argument is a duration.")) }
+        if h.neutral > 0 { parts.append(String(localized: "\(Format.minutes(h.neutral)) neutral", comment: "Hour tooltip: neutral time in that hour. The argument is a duration.")) }
+        if h.procrastination > 0 { parts.append(String(localized: "\(Format.minutes(h.procrastination)) waste", comment: "Hour tooltip: waste time in that hour. The argument is a duration.")) }
         return parts.joined(separator: " · ")
     }
 
     private var accessibilitySummary: String {
         lanes.map { lane in
             let busiest = lane.hours.max { $0.procrastination < $1.procrastination }
-            guard lane.hasData, let busiest, busiest.procrastination > 0 else { return "\(lane.name): no waste" }
-            return "\(lane.name): most waste at \(busiest.clockHour):00"
+            guard lane.hasData, let busiest, busiest.procrastination > 0 else { return String(localized: "\(lane.name): no waste", comment: "Accessibility summary of one day-strip lane with no waste. The argument is the device name.") }
+            return String(localized: "\(lane.name): most waste at \(busiest.clockHour):00", comment: "Accessibility summary of one day-strip lane. First argument: the device name; second: the hour of the day with the most waste.")
         }
         .joined(separator: ". ")
     }
@@ -145,13 +145,13 @@ private struct Tooltip: ViewModifier {
 }
 
 extension DayStrip {
-    static let iphoneNote = "iPhone minutes come from Screen Time reports and can lag a few minutes."
+    static var iphoneNote: String { String(localized: "iPhone minutes come from Screen Time reports and can lag a few minutes.", comment: "Note under the iPhone lane of the day strip.") }
 
     /// One lane per device in `devices`, Mac first, from the merged ledger.
     static func lanes(_ ledger: Ledger, day: DayKey, devices: [Device] = [.mac, .iphone], notes: Bool = false) -> [Lane] {
         [Device.mac, .iphone].filter(devices.contains).map { device in
             Lane(
-                name: device == .mac ? "Mac" : "iPhone",
+                name: device == .mac ? String(localized: "Mac", comment: "Device name, the day-strip lane label.") : String(localized: "iPhone", comment: "Device name, the day-strip lane label."),
                 hours: ledger.hours(for: day, devices: [device]),
                 hasData: ledger.days[Ledger.key(day, device)] != nil,
                 note: notes && device == .iphone ? iphoneNote : nil

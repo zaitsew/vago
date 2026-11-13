@@ -41,25 +41,34 @@ enum GuardNames {
 
     /// "Instagram (pause), YouTube (block) · 30 min a day · Mon–Fri 09:00–18:00".
     static func summary(_ list: GuardList) -> String {
-        guard !list.places.isEmpty else { return "Not set up" }
-        let places = list.places.map { "\($0.name) (\($0.mode == .block ? "block" : "pause"))" }.joined(separator: ", ")
-        return "\(places) · \(list.budgetMinutes) min a day · \(hours(list.workHours))"
+        guard !list.places.isEmpty else { return String(localized: "Not set up", comment: "Settings: summary of the guarded places before setup.") }
+        let places = list.places.map { place in
+            place.mode == .block
+                ? String(localized: "\(place.name) (block)", comment: "Settings summary: a guarded place that is blocked in work hours. The argument is the place name.")
+                : String(localized: "\(place.name) (pause)", comment: "Settings summary: a guarded place that pauses. The argument is the place name.")
+        }.joined(separator: ", ")
+        return String(localized: "\(places) · \(list.budgetMinutes) min a day · \(hours(list.workHours))", comment: "Settings summary of the guard. First argument: the places; second: the daily budget in minutes; third: the work hours.")
     }
 
     static func hours(_ h: WorkHours) -> String {
         func clock(_ m: Int) -> String { String(format: "%02d:%02d", m / 60, m % 60) }
         let order = [2, 3, 4, 5, 6, 7, 1]
-        let names = [1: "Sun", 2: "Mon", 3: "Tue", 4: "Wed", 5: "Thu", 6: "Fri", 7: "Sat"]
+        let names = [
+            1: String(localized: "Sun", comment: "Short weekday name."), 2: String(localized: "Mon", comment: "Short weekday name."),
+            3: String(localized: "Tue", comment: "Short weekday name."), 4: String(localized: "Wed", comment: "Short weekday name."),
+            5: String(localized: "Thu", comment: "Short weekday name."), 6: String(localized: "Fri", comment: "Short weekday name."),
+            7: String(localized: "Sat", comment: "Short weekday name."),
+        ]
         let days = order.filter { h.weekdays.contains($0) }
         let label: String
         if days == [2, 3, 4, 5, 6] {
-            label = "Mon–Fri"
+            label = String(localized: "Mon–Fri", comment: "Work-days label.")
         } else if days.count == 7 {
-            label = "every day"
+            label = String(localized: "every day", comment: "Work-days label.")
         } else {
             label = days.map { names[$0] ?? "" }.joined(separator: " ")
         }
-        return "\(label) \(clock(h.start))–\(clock(h.end))"
+        return String(localized: "\(label) \(clock(h.start))–\(clock(h.end))", comment: "Work hours. First argument: the days; then the start and end clock times. Example: Mon–Fri 09:00–18:00.")
     }
 }
 
@@ -370,7 +379,7 @@ struct SetupHost: View {
 enum SetupWindow {
     static func make(model: AppModel) -> HostedWindow {
         let tall = model.variants.setup == .a
-        return HostedWindow(title: "Guarded places", size: NSSize(width: 480, height: tall ? 560 : 500),
+        return HostedWindow(title: String(localized: "Guarded places", comment: "Title of the setup window."), size: NSSize(width: 480, height: tall ? 560 : 500),
                             minSize: NSSize(width: 440, height: 440), resizable: true, autosaveName: "VagoSetup") { host in
             AnyView(SetupHost(model: model, close: { host.close() }))
         }

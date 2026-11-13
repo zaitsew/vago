@@ -25,9 +25,9 @@ final class Nudger {
         // A clear distraction in the middle of a focus session: the first second is enough.
         if let last = lastShown[key], now.timeIntervalSince(last) < Self.cooldown { return }
         lastShown[key] = now
-        panel.show(title: "\(focus?.stage(at: now) ?? "🌱") at risk — back to work?", subtitle: label, buttons: [
-            .init(title: "Back to work", prominent: true) {},
-            .init(title: "Scroll", prominent: false) {},
+        panel.show(title: String(localized: "\(focus?.stage(at: now) ?? "🌱") at risk — back to work?", comment: "Focus nudge title. The argument is the tree emoji of the running focus session."), subtitle: label, buttons: [
+            .init(title: String(localized: "Back to work", comment: "Focus nudge button."), prominent: true) {},
+            .init(title: String(localized: "Scroll", comment: "Focus nudge button: keep scrolling."), prominent: false) {},
         ])
     }
 
@@ -46,13 +46,13 @@ final class Nudger {
     func showBreak(move: Move, minutes: Int, done: @escaping @MainActor () -> Void, another: @escaping @MainActor () -> Void,
                    later: @escaping @MainActor () -> Void, ignored: @escaping @MainActor () -> Void) {
         panel.show(
-            title: "🚶 \(minutes) min at the Mac. Time to move",
+            title: String(localized: "🚶 \(minutes) min at the Mac. Time to move", comment: "Move reminder title. The argument is the minutes at the Mac."),
             subtitle: move.title,
             detail: move.how,
             buttons: [
-                .init(title: "I did it", prominent: true, action: done),
-                .init(title: "Another", prominent: false, keepsOpen: true, action: another),
-                .init(title: "Later", prominent: false, action: later),
+                .init(title: String(localized: "I did it", comment: "Move reminder button."), prominent: true, action: done),
+                .init(title: String(localized: "Another", comment: "Move reminder button: suggest another move."), prominent: false, keepsOpen: true, action: another),
+                .init(title: String(localized: "Later", comment: "Move reminder button."), prominent: false, action: later),
             ],
             seconds: 90, tag: "break", timedOut: ignored
         )
@@ -69,13 +69,17 @@ final class Nudger {
     /// window cannot list them all, the title says so ("Review 5 of 786 unsure places today").
     /// Stays a minute; closing by itself counts as "Not today".
     func showEveningReview(count: Int, of total: Int, review: @escaping @MainActor () -> Void) {
-        let places = count == 1 ? "1 place" : "\(count) places"
+        let places = count == 1
+            ? String(localized: "1 place", comment: "Evening review offer: one unsure place.")
+            : String(localized: "\(count) places", comment: "Evening review offer: several unsure places. The argument is the count.")
         panel.show(
-            title: total > count ? "Review \(count) of \(total) unsure places today" : "Vago was unsure about \(places) today",
-            subtitle: "Work or waste? Each answer becomes a rule.",
+            title: total > count
+                ? String(localized: "Review \(count) of \(total) unsure places today", comment: "Evening review offer title. First argument: places listed; second: all unsure places.")
+                : String(localized: "Vago was unsure about \(places) today", comment: "Evening review offer title. The argument is a phrase such as 3 places."),
+            subtitle: String(localized: "Work or waste? Each answer becomes a rule.", comment: "Evening review offer subtitle."),
             buttons: [
-                .init(title: "Review", prominent: true, action: review),
-                .init(title: "Not today", prominent: false) {},
+                .init(title: String(localized: "Review", comment: "Evening review offer button."), prominent: true, action: review),
+                .init(title: String(localized: "Not today", comment: "Evening review offer button: skip today."), prominent: false) {},
             ],
             seconds: 60, tag: "review"
         )

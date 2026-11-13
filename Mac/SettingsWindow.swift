@@ -62,7 +62,7 @@ final class HostedWindow {
 @MainActor
 enum SettingsWindow {
     static func make(model: AppModel) -> HostedWindow {
-        HostedWindow(title: "Vago Settings", size: NSSize(width: 480, height: 600), minSize: NSSize(width: 420, height: 420),
+        HostedWindow(title: String(localized: "Vago Settings", comment: "Title of the Settings window."), size: NSSize(width: 480, height: 600), minSize: NSSize(width: 420, height: 420),
                      resizable: true, autosaveName: "VagoSettings") { _ in
             AnyView(SettingsView(model: model))
         }
@@ -131,11 +131,11 @@ struct SettingsView: View {
             }
 
             Section("Permissions") {
-                PermissionRow(name: "Accessibility", ok: model.accessibilityGranted,
-                              detail: model.accessibilityGranted ? "Window titles of every app" : "Off: Vago sees app names only") {
+                PermissionRow(name: String(localized: "Accessibility", comment: "Settings: permission name."), ok: model.accessibilityGranted,
+                              detail: model.accessibilityGranted ? String(localized: "Window titles of every app", comment: "Settings: Accessibility permission detail when granted.") : String(localized: "Off: Vago sees app names only", comment: "Settings: Accessibility permission detail when not granted.")) {
                     if !Permissions.requestAccessibility() { Permissions.openAccessibilitySettings() }
                 }
-                PermissionRow(name: "Automation", ok: !model.automation.values.contains(.denied), detail: automationDetail) {
+                PermissionRow(name: String(localized: "Automation", comment: "Settings: permission name."), ok: !model.automation.values.contains(.denied), detail: automationDetail) {
                     Permissions.openAutomationSettings()
                 }
             }
@@ -174,10 +174,10 @@ struct SettingsView: View {
 
             Section("Sync") {
                 LabeledContent {
-                    Text(model.icloudEnabled ? "On" : "Off").foregroundStyle(.secondary)
+                    Text(model.icloudEnabled ? String(localized: "On", comment: "Settings: iCloud sync state.") : String(localized: "Off", comment: "Settings: iCloud sync state.")).foregroundStyle(.secondary)
                 } label: {
                     Label("iCloud", systemImage: model.icloudEnabled ? "icloud" : "icloud.slash")
-                    Text(model.icloudEnabled ? "Daily totals are shared with the iPhone" : "Needs the development profile: scripts/make-mac-profile.sh")
+                    Text(model.icloudEnabled ? String(localized: "Daily totals are shared with the iPhone", comment: "Settings: iCloud sync detail when on.") : String(localized: "Needs the development profile: scripts/make-mac-profile.sh", comment: "Settings: iCloud sync detail when off. The script name stays as it is."))
                 }
             }
         }
@@ -194,20 +194,25 @@ struct SettingsView: View {
 
     private var judge: (state: String, detail: String, symbol: String, color: Color) {
         if !model.judgeAvailable {
-            return ("Unavailable", "Apple Intelligence is off or still downloading. Mixed apps count as waste, unknown ones as neutral.",
+            return (String(localized: "Unavailable", comment: "Settings: state of the on-device AI judge."),
+                    String(localized: "Apple Intelligence is off or still downloading. Mixed apps count as waste, unknown ones as neutral.", comment: "Settings: why the AI judge is unavailable."),
                     "sparkles.slash", .secondary)
         }
         if model.judgeHeld {
-            return ("Held", "It called most feed time work on three days. Its work calls on mixed apps count as neutral until a normal day or your next correction.",
+            return (String(localized: "Held", comment: "Settings: state of the on-device AI judge when its work calls are held."),
+                    String(localized: "It called most feed time work on three days. Its work calls on mixed apps count as neutral until a normal day or your next correction.", comment: "Settings: why the AI judge is held."),
                     "exclamationmark.triangle", .orange)
         }
-        return ("On", "Decides unclear places on this Mac. Nothing leaves the Mac.", "sparkles", .green)
+        return (String(localized: "On", comment: "Settings: state of the on-device AI judge."),
+                String(localized: "Decides unclear places on this Mac. Nothing leaves the Mac.", comment: "Settings: what the AI judge does."), "sparkles", .green)
     }
 
     private var automationDetail: String {
-        if model.automation.isEmpty { return "Each browser asks the first time it is in front" }
+        if model.automation.isEmpty { return String(localized: "Each browser asks the first time it is in front", comment: "Settings: Automation permission detail before any browser asked.") }
         return model.automation.sorted { $0.key < $1.key }
-            .map { "\(Self.browserName($0.key)) \($0.value == .allowed ? "allowed" : "denied")" }
+            .map { $0.value == .allowed
+                ? String(localized: "\(Self.browserName($0.key)) allowed", comment: "Settings: a browser the owner allowed Automation for. The argument is the browser name.")
+                : String(localized: "\(Self.browserName($0.key)) denied", comment: "Settings: a browser the owner denied Automation for. The argument is the browser name.") }
             .joined(separator: ", ")
     }
 
@@ -241,12 +246,12 @@ private struct PermissionRow: View {
             Button("Open Settings", action: action)
         } label: {
             Label {
-                Text(name)
+                Text(verbatim: name)
             } icon: {
                 Image(systemName: ok ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                     .foregroundStyle(ok ? .green : .orange)
             }
-            Text(detail)
+            Text(verbatim: detail)
         }
     }
 }

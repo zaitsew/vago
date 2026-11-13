@@ -38,54 +38,42 @@ enum RenderVariants {
             }
         }
 
-        // Setup.
+        // Setup (the rebuild is on the next branch).
         save("setup-a.png", CGSize(width: 480, height: 560), SetupContent(draft: sampleDraft(), variant: .a).windowBacked())
         for step in 1...3 {
             save("setup-b-step\(step).png", CGSize(width: 480, height: 500),
                  SetupContent(draft: sampleDraft(), variant: .b, step: step).windowBacked())
         }
 
-        // Pause panel.
-        let pauseSize = CGSize(width: 560, height: 380)
-        for variant in [Variant.a, .b] {
-            let name = variant.rawValue
-            let size = variant == .a ? pauseSize : CGSize(width: 1280, height: 800)
-            for (suffix, elapsed, over) in [("", 3.0, false), ("-ready", 5.0, false), ("-over", 5.0, true)] where !(variant == .b && over) {
-                let pause = PauseContent(placeName: "Instagram", usedMinutes: over ? 34 : 12, budgetMinutes: 30, overBudget: over,
-                                         variant: variant, elapsed: elapsed)
-                save("pause-\(name)\(suffix).png", size, ZStack(alignment: variant == .a ? .top : .center) {
-                    MockWindow(title: "Instagram · Safari")
-                    pause
-                })
-            }
+        // Pause card: ready under budget (check) and ready over budget (exclamation, never green).
+        let cardSize = CGSize(width: 560, height: 380)
+        for (name, over) in [("pause-ready", false), ("pause-over-ready", true)] {
+            let pause = PauseContent(placeName: "Instagram", usedMinutes: over ? 34 : 12, budgetMinutes: 30, overBudget: over, elapsed: 5)
+            save("\(name).png", cardSize, ZStack(alignment: .top) {
+                MockWindow(title: "Instagram · Safari")
+                pause
+            })
         }
 
-        // Block panel.
+        // Block card, mid-hold.
         let until = Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date()) ?? Date()
-        save("block-a.png", pauseSize, ZStack {
+        save("block.png", cardSize, ZStack {
             MockWindow(title: "Instagram · Safari")
-            BlockContent(placeName: "Instagram", until: until, variant: .a, holdFraction: 0.45)
-        })
-        save("block-b.png", pauseSize, ZStack {
-            MockWindow(title: "Instagram · Safari")
-            BlockContent(placeName: "Instagram", until: until, variant: .b, typed: "Insta")
+            BlockContent(placeName: "Instagram", until: until, holdFraction: 0.45)
         })
 
-        // Mode icon, all three modes.
-        for variant in [Variant.a, .b] {
-            for mode in Mode.allCases {
-                save("mode-icon-\(variant.rawValue)-\(mode.rawValue).png", CGSize(width: 150, height: 30), scale: 4,
-                     MenuBarMock(mode: mode, variant: variant))
+        // Mode pill next to every share tint.
+        let shares: [(String, String, Tint)] = [("green", "😄 92%", .green), ("yellow", "😐 71%", .yellow), ("red", "😞 38%", .red)]
+        for mode in Mode.allCases {
+            for (name, text, tint) in shares {
+                save("mode-icon-\(mode.rawValue)-with-share-\(name).png", CGSize(width: 150, height: 30), scale: 4,
+                     MenuBarMock(mode: mode, shareText: text, tint: tint))
             }
         }
 
-        // Popover top with the toggle row.
-        for (variant, mode) in [(Variant.a, Mode.procrastination), (.a, .work), (.b, .procrastination), (.b, .work)] {
-            let work = mode == .work
-            save("toggle-\(variant.rawValue)\(work ? "-work" : "").png", CGSize(width: 340, height: 190), PopoverTopMock(
-                label: "Instagram", mode: mode, variant: variant
-            ))
-        }
+        // Popover top with the switch off (waste) and on (work).
+        save("toggle-off.png", CGSize(width: 340, height: 190), PopoverTopMock(label: "Instagram", mode: .procrastination))
+        save("toggle-on.png", CGSize(width: 340, height: 190), PopoverTopMock(label: "Instagram", mode: .work))
 
         // The banner is system UI: faithful mocks, named so.
         save("notice-a-MOCK.png", CGSize(width: 420, height: 130), scale: 3, NoticeMock(withAction: false))
@@ -173,17 +161,18 @@ private struct MockWindow: View {
     }
 }
 
-/// The menu bar around the badge and the share, on a mid-grey bar.
+/// The menu bar around the pill and the share, on a light bar.
 private struct MenuBarMock: View {
     var mode: Mode
-    var variant: Variant
+    var shareText: String
+    var tint: Tint
 
     var body: some View {
         HStack(spacing: 6) {
-            ModeBadge(mode: mode, variant: variant)
-            Text("😄 92%")
+            ModeBadge(mode: mode)
+            Text(verbatim: shareText)
                 .font(.system(size: 13, weight: .medium).monospacedDigit())
-                .foregroundStyle(.green)
+                .foregroundStyle(Palette.color(tint))
         }
         .padding(.horizontal, 12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -195,11 +184,10 @@ private struct MenuBarMock: View {
 private struct PopoverTopMock: View {
     var label: String
     var mode: Mode
-    var variant: Variant
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            ModeRowContent(label: label, mode: mode, isWork: mode == .work, iconVariant: variant, toggleVariant: variant, onToggle: {})
+            ModeRowContent(label: label, mode: mode, isWork: mode == .work, onToggle: {})
             Divider()
             Hero(share: ProductiveShare(productive: 190 * 60, neutral: 45 * 60, procrastination: 50 * 60))
         }

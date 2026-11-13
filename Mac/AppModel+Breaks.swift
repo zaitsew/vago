@@ -67,7 +67,7 @@ extension AppModel {
     func breakDone() {
         breaks.done(at: Date())
         nudger?.closeBreak()
-        nudger?.toast("🚶 Done. Next reminder after \(breaks.streakMinutes) min at the Mac")
+        nudger?.toast(String(localized: "🚶 Done. Next reminder after \(breaks.streakMinutes) min at the Mac", comment: "Toast after a move was done. The argument is the minutes at the Mac before the next reminder."))
         changedBreaks()
     }
 

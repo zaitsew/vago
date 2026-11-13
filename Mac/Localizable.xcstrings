@@ -1,0 +1,762 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "": {
+      "comment": "Empty label of a hidden picker in the setup window."
+    },
+    "%@ %@–%@": {
+      "comment": "Work hours. First argument: the days; then the start and end clock times. Example: Mon–Fri 09:00–18:00.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ %2$@–%3$@"
+          }
+        }
+      }
+    },
+    "%@ %lldm": {
+      "comment": "Menu-bar text during a focus session. First argument: the tree emoji; second: minutes left.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ %2$lldm"
+          }
+        }
+      }
+    },
+    "%@ (block)": {
+      "comment": "Settings summary: a guarded place that is blocked in work hours. The argument is the place name."
+    },
+    "%@ (pause)": {
+      "comment": "Settings summary: a guarded place that pauses. The argument is the place name."
+    },
+    "%@ allowed": {
+      "comment": "Settings: a browser the owner allowed Automation for. The argument is the browser name."
+    },
+    "%@ at risk — back to work?": {
+      "comment": "Focus nudge title. The argument is the tree emoji of the running focus session."
+    },
+    "%@ at the Mac · %@": {
+      "comment": "Popover move row. First argument: a duration; second: the moves-today phrase.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ at the Mac · %2$@"
+          }
+        }
+      }
+    },
+    "%@ denied": {
+      "comment": "Settings: a browser the owner denied Automation for. The argument is the browser name."
+    },
+    "%@ is blocked": {
+      "comment": "Block card title when no end time is known. The argument is the place name."
+    },
+    "%@ is blocked until %@": {
+      "comment": "Block card title. First argument: the place name; second: the clock time the work hours end, such as 18:00.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ is blocked until %2$@"
+          }
+        }
+      }
+    },
+    "%@ neutral": {
+      "comment": "Hour tooltip: neutral time in that hour. The argument is a duration."
+    },
+    "%@ waste": {
+      "comment": "Hour tooltip: waste time in that hour. The argument is a duration."
+    },
+    "%@ work": {
+      "comment": "Hour tooltip: work time in that hour. The argument is a duration."
+    },
+    "%@ work · %@ neutral · %@ waste": {
+      "comment": "The day split under the share. Each argument is a duration such as 3h 12m.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ work · %2$@ neutral · %3$@ waste"
+          }
+        }
+      }
+    },
+    "%@ · %lld min a day · %@": {
+      "comment": "Settings summary of the guard. First argument: the places; second: the daily budget in minutes; third: the work hours.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$lld min a day · %3$@"
+          }
+        }
+      }
+    },
+    "%@: most waste at %lld:00": {
+      "comment": "Accessibility summary of one day-strip lane. First argument: the device name; second: the hour of the day with the most waste.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@: most waste at %2$lld:00"
+          }
+        }
+      }
+    },
+    "%@: no waste": {
+      "comment": "Accessibility summary of one day-strip lane with no waste. The argument is the device name."
+    },
+    "%lld": {
+      "comment": "Settings: a number shown beside a control."
+    },
+    "%lld min a day": {
+      "comment": "Setup: the daily budget in minutes."
+    },
+    "%lld min at the Mac": {
+      "comment": "Settings: choice of how long a streak at the Mac must last before a move reminder. The argument is minutes."
+    },
+    "%lld min at the Mac — %@": {
+      "comment": "Popover move row. First argument: minutes at the Mac; second: the name of the suggested move.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld min at the Mac — %2$@"
+          }
+        }
+      }
+    },
+    "%lld min left": {
+      "comment": "Popover focus row: minutes left in the running focus session."
+    },
+    "%lld min so far": {
+      "comment": "Caption of the share before 15 active minutes. The argument is the minutes counted so far."
+    },
+    "%lld moves today": {
+      "comment": "Popover: moves done today. The argument is the count."
+    },
+    "%lld of %lld answered": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld of %2$lld answered"
+          }
+        }
+      },
+      "comment": "Evening review list: how many places were answered out of the total."
+    },
+    "%lld of %lld min today": {
+      "comment": "Pause card status: minutes of waste used today, then the daily budget.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld of %2$lld min today"
+          }
+        }
+      }
+    },
+    "%lld of %lld min waste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld of %2$lld min waste"
+          }
+        }
+      },
+      "comment": "Waste used today out of the daily limit, in minutes. First argument: used; second: the limit."
+    },
+    "%lld percent": {
+      "comment": "Accessibility value of a progress bar. The argument is the percentage."
+    },
+    "%lld places": {
+      "comment": "Evening review offer: several unsure places. The argument is the count."
+    },
+    "%lldh %@m": {
+      "comment": "A duration of hours and minutes. First argument: hours; second: minutes with two digits. Example: 3h 12m.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lldh %2$@m"
+          }
+        }
+      }
+    },
+    "%lldm": {
+      "comment": "A duration in whole minutes. Example: 12m."
+    },
+    "%llds": {
+      "comment": "A duration under a minute, in seconds. Example: 45s."
+    },
+    "1 move today": {
+      "comment": "Popover: one move done today."
+    },
+    "1 place": {
+      "comment": "Evening review offer: one unsure place."
+    },
+    "A full cell is a full hour. Hover for minutes.": {
+      "comment": "Day window legend hint under the day strip."
+    },
+    "AI held": {
+      "comment": "Day window badge: the AI judge is held back."
+    },
+    "AI unavailable": {
+      "comment": "Day window badge: the AI judge is not available on this Mac."
+    },
+    "AI unsure: %@. Counted as neutral.": {
+      "comment": "Tooltip of the Now line. The argument is the AI judge's reason."
+    },
+    "AI: %@": {
+      "comment": "Note on a call of the AI judge. The argument is its reason.\nTooltip of the Now line. The argument is the AI judge's one-sentence reason."
+    },
+    "Accessibility": {
+      "comment": "Settings: permission name."
+    },
+    "Add": {
+      "comment": "Setup button that adds the typed site."
+    },
+    "Add %@": {
+      "comment": "Setup button that adds the place in front. The argument is the place name."
+    },
+    "Add a site, for example reddit.com": {
+      "comment": "Setup text-field placeholder."
+    },
+    "All": {
+      "comment": "Device filter of the Day window: every device."
+    },
+    "Allow": {
+      "comment": "Popover button that asks for the Accessibility permission."
+    },
+    "Allow Accessibility to see window titles.": {
+      "comment": "Popover hint when the Accessibility permission is missing."
+    },
+    "Another": {
+      "comment": "Move reminder button: suggest another move."
+    },
+    "Apple Intelligence is off or still downloading. Mixed apps count as waste, unknown ones as neutral.": {
+      "comment": "Settings: why the AI judge is unavailable."
+    },
+    "Automation": {
+      "comment": "Settings: permission name."
+    },
+    "Autonomy": {
+      "comment": "Settings section heading for the AI judge and learned rules."
+    },
+    "Back": {
+      "comment": "Setup button: previous step."
+    },
+    "Back to work": {
+      "comment": "Focus nudge button."
+    },
+    "Block": {
+      "comment": "Setup choice: the place is blocked in work hours."
+    },
+    "Block in work hours. It does not open in your work hours; unlocking takes a deliberate step.": {
+      "comment": "Setup explanation of the block mode."
+    },
+    "Cancel": {
+      "comment": "Button that closes a dialog or window without saving."
+    },
+    "Close": {
+      "comment": "Big button of the pause and block cards: closes the place."
+    },
+    "Correct this place for today and from now on": {
+      "comment": "Tooltip of the Wrong? menu in the popover."
+    },
+    "Count %@ as": {
+      "comment": "Menu header above the Work, Neutral and Waste choices. The argument is the place name."
+    },
+    "Count as": {
+      "comment": "Label of the picker that sets a place to Work, Neutral or Waste."
+    },
+    "Counts as neutral.": {
+      "comment": "Mode row caption: the place in front counts as neutral."
+    },
+    "Counts as waste.": {
+      "comment": "Mode row caption: the place in front counts as waste."
+    },
+    "Counts as work.": {
+      "comment": "Mode row caption: the place in front counts as work."
+    },
+    "Daily budget": {
+      "comment": "Setup row label for the daily waste budget."
+    },
+    "Daily totals are shared with the iPhone": {
+      "comment": "Settings: iCloud sync detail when on."
+    },
+    "Day": {
+      "comment": "Right-click menu item: opens the Day window."
+    },
+    "Decides unclear places on this Mac. Nothing leaves the Mac.": {
+      "comment": "Settings: what the AI judge does."
+    },
+    "Design variants": {
+      "comment": "Hidden Settings section heading for choosing between two designs of a screen."
+    },
+    "Devices": {
+      "comment": "Accessibility label of the device filter in the Day window."
+    },
+    "Done": {
+      "comment": "Button that finishes a flow."
+    },
+    "Done — %lld rules learned": {
+      "comment": "End of the evening review. The argument is the number of rules learned."
+    },
+    "Done — 1 rule learned": {
+      "comment": "End of the evening review: one rule was learned."
+    },
+    "Drift notice": {
+      "comment": "Name of a screen that has two designs, in the hidden design-variants section of Settings."
+    },
+    "Each answer moves its minutes and becomes a rule. Leave a row blank to keep it unsure.": {
+      "comment": "Evening review list explanation."
+    },
+    "Each browser asks the first time it is in front": {
+      "comment": "Settings: Automation permission detail before any browser asked."
+    },
+    "Evening review": {
+      "comment": "Title of the evening review window."
+    },
+    "Focus": {
+      "comment": "Popover focus row label before any tree was grown."
+    },
+    "Focus 25": {
+      "comment": "Popover button: starts a 25-minute focus session."
+    },
+    "Focus 50": {
+      "comment": "Popover button: starts a 50-minute focus session."
+    },
+    "Forget": {
+      "comment": "Confirmation button that deletes the learned rules."
+    },
+    "Forget %lld learned rules?": {
+      "comment": "Confirmation dialog title. The argument is the number of learned rules."
+    },
+    "Forget learned rules…": {
+      "comment": "Settings button that opens the confirmation to delete learned rules."
+    },
+    "Fri": {
+      "comment": "Short weekday name."
+    },
+    "From your corrections, and from places the AI called the same way on three days.": {
+      "comment": "Settings explanation of where learned rules come from."
+    },
+    "General": {
+      "comment": "Settings section heading."
+    },
+    "Goals": {
+      "comment": "Settings field label for the owner's goals."
+    },
+    "Guard": {
+      "comment": "Settings section heading for the pause and block feature."
+    },
+    "Guarded places": {
+      "comment": "Title of the setup window."
+    },
+    "Guarded places…": {
+      "comment": "Settings button that opens the guarded-places setup."
+    },
+    "Held": {
+      "comment": "Settings: state of the on-device AI judge when its work calls are held."
+    },
+    "Hold for 3 seconds to unlock": {
+      "comment": "Accessibility label of the hold-to-unlock button on the block card."
+    },
+    "Hold to unlock": {
+      "comment": "Label of the button on the block card that unlocks the place after a 3-second hold."
+    },
+    "I did it": {
+      "comment": "Move reminder button."
+    },
+    "It called most feed time work on three days. Its work calls on mixed apps count as neutral until a normal day or your next correction.": {
+      "comment": "Settings: why the AI judge is held."
+    },
+    "Its work calls on mixed apps count as neutral today. A correction lifts the hold.": {
+      "comment": "Tooltip of the AI held badge in the Day window."
+    },
+    "Lab": {
+      "comment": "Settings section heading for experimental features."
+    },
+    "Later": {
+      "comment": "Move reminder button."
+    },
+    "Launch at login": {
+      "comment": "Settings switch."
+    },
+    "Learned rules": {
+      "comment": "Settings row label for the number of learned rules."
+    },
+    "Mac": {
+      "comment": "Device name, the day-strip lane label.\nDevice name."
+    },
+    "Mac only": {
+      "comment": "Day window note: the top lists include only this Mac."
+    },
+    "Mac · today": {
+      "comment": "Day window caption under Vago's calls."
+    },
+    "Mon": {
+      "comment": "Short weekday name."
+    },
+    "Mon–Fri": {
+      "comment": "Work-days label."
+    },
+    "Move now": {
+      "comment": "Popover button: shows a move suggestion now."
+    },
+    "Move reminders": {
+      "comment": "Settings switch for move reminders."
+    },
+    "Needs the development profile: scripts/make-mac-profile.sh": {
+      "comment": "Settings: iCloud sync detail when off. The script name stays as it is."
+    },
+    "Neutral": {
+      "comment": "Name of the neutral mode, for the tooltip and accessibility."
+    },
+    "Next": {
+      "comment": "Setup button: next step."
+    },
+    "Next day": {
+      "comment": "Tooltip of the next-day button in the Day window."
+    },
+    "No calls yet today.": {
+      "comment": "Day window empty state for the AI judge's calls."
+    },
+    "Not set up": {
+      "comment": "Settings: summary of the guarded places before setup."
+    },
+    "Not today": {
+      "comment": "Evening review offer button: skip today."
+    },
+    "Nothing in front yet": {
+      "comment": "Mode row caption before any place was seen."
+    },
+    "Nothing to propose yet. Add a site below.": {
+      "comment": "Setup empty state before any waste was seen."
+    },
+    "Nothing to review today.": {
+      "comment": "Evening review empty state."
+    },
+    "Nothing yet today": {
+      "comment": "Day window empty state of a top list."
+    },
+    "Now: ": {
+      "comment": "Popover Now line prefix, followed by the place name."
+    },
+    "Off": {
+      "comment": "Settings: iCloud sync state.\nSwitch state."
+    },
+    "Off: Vago sees app names only": {
+      "comment": "Settings: Accessibility permission detail when not granted."
+    },
+    "On": {
+      "comment": "Settings: iCloud sync state.\nSettings: state of the on-device AI judge.\nSwitch state."
+    },
+    "On a break · %@": {
+      "comment": "Popover move row while the owner is on a break. The argument is the moves-today phrase."
+    },
+    "On-device AI judge": {
+      "comment": "Settings row label for the on-device AI judge."
+    },
+    "Open Settings": {
+      "comment": "Button that opens the macOS settings pane of a permission."
+    },
+    "Open evening review now": {
+      "comment": "Settings button in the Lab section."
+    },
+    "Open for %lld min": {
+      "comment": "Small button on the pause card: opens the place for some minutes. The argument is the number of minutes."
+    },
+    "Over budget · %lld of %lld min today": {
+      "comment": "Pause card status when today's waste passed the budget. First number: minutes used; second: the budget.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Over budget · %1$lld of %2$lld min today"
+          }
+        }
+      }
+    },
+    "Pause": {
+      "comment": "Setup choice: the place pauses for 5 seconds each time it opens."
+    },
+    "Pause and block are on": {
+      "comment": "Settings switch that turns the guard on or off."
+    },
+    "Pause. A 5-second pause each time it opens, all day.": {
+      "comment": "Setup explanation of the pause mode."
+    },
+    "Pause: a 5-second pause every time it opens. Block: it stays closed in your work hours, and pauses outside them.": {
+      "comment": "Setup explanation of pause and block."
+    },
+    "Paused · no input": {
+      "comment": "Popover status while no input was seen for two minutes."
+    },
+    "Paused · screen locked": {
+      "comment": "Popover status while the screen is locked."
+    },
+    "Permissions": {
+      "comment": "Settings section heading."
+    },
+    "Place %lld of %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Place %1$lld of %2$lld"
+          }
+        }
+      },
+      "comment": "Accessibility label of the progress dots in the evening review. First argument: the current place; second: the total."
+    },
+    "Previous day": {
+      "comment": "Tooltip of the previous-day button in the Day window."
+    },
+    "Procrastination": {
+      "comment": "Name of the procrastination mode, for the tooltip and accessibility."
+    },
+    "Productive today · all devices": {
+      "comment": "Popover caption above the big productive share."
+    },
+    "Quit": {
+      "comment": "Popover button that quits the app."
+    },
+    "Quit Vago": {
+      "comment": "Right-click menu item: quits the app."
+    },
+    "Remind after": {
+      "comment": "Settings picker label for the streak length before a move reminder."
+    },
+    "Resets when you leave it or the day ends.": {
+      "comment": "Mode row caption: how long a flip of the switch lasts."
+    },
+    "Review": {
+      "comment": "Evening review offer button."
+    },
+    "Review %lld of %lld unsure places today": {
+      "comment": "Evening review offer title. First argument: places listed; second: all unsure places.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Review %1$lld of %2$lld unsure places today"
+          }
+        }
+      }
+    },
+    "Sat": {
+      "comment": "Short weekday name."
+    },
+    "Save": {
+      "comment": "Settings button that saves the goals text."
+    },
+    "Scroll": {
+      "comment": "Focus nudge button: keep scrolling."
+    },
+    "Settings…": {
+      "comment": "Right-click menu item: opens Settings."
+    },
+    "Settled by a rule": {
+      "comment": "Tooltip of the Now line."
+    },
+    "Setup": {
+      "comment": "Name of a screen that has two designs, in the hidden design-variants section of Settings."
+    },
+    "Sites, apps and Vago's calls are kept for today only.": {
+      "comment": "Day window note shown when an earlier day is chosen."
+    },
+    "Step %lld of 3": {
+      "comment": "Setup progress label. The argument is the step number."
+    },
+    "Stop": {
+      "comment": "Popover button that stops the running focus session."
+    },
+    "Sun": {
+      "comment": "Short weekday name."
+    },
+    "Switch %@ to procrastination": {
+      "comment": "Right-click menu item. The argument is the place name."
+    },
+    "Switch %@ to work": {
+      "comment": "Right-click menu item. The argument is the place name."
+    },
+    "Switch place to work": {
+      "comment": "Right-click menu item before any place was seen."
+    },
+    "Sync": {
+      "comment": "Settings section heading for iCloud."
+    },
+    "Takes effect the next time the screen shows. Same as: defaults write com.zaitsew.vago.mac variant.<screen> b": {
+      "comment": "Settings note under the hidden design variants; the command stays as it is."
+    },
+    "Thu": {
+      "comment": "Short weekday name."
+    },
+    "Today": {
+      "comment": "Day window header when the shown day is today.\nTitle of the Day window."
+    },
+    "Top waste": {
+      "comment": "Heading of the list of places where the most waste time went today."
+    },
+    "Top work": {
+      "comment": "Heading of the list of places where the most work time went today."
+    },
+    "Tue": {
+      "comment": "Short weekday name."
+    },
+    "Unavailable": {
+      "comment": "Settings: state of the on-device AI judge."
+    },
+    "Unsure: %@": {
+      "comment": "Note on a call the AI judge was unsure about. The argument is its reason."
+    },
+    "Vago Settings": {
+      "comment": "Title of the Settings window."
+    },
+    "Vago could not tell.": {
+      "comment": "Shown on a review card when the AI judge gave no reason."
+    },
+    "Vago decided these places on its own. Change one and its minutes move; the place gets a rule.": {
+      "comment": "Day window explanation of the AI judge's calls."
+    },
+    "Vago forgets the rules from your corrections and from its own repeated calls. Built-in rules stay.": {
+      "comment": "Message of the forget-rules confirmation dialog."
+    },
+    "Vago was unsure about %@ today": {
+      "comment": "Evening review offer title. The argument is a phrase such as 3 places."
+    },
+    "Vago · %@": {
+      "comment": "Tooltip of the menu-bar item. The argument is the mode name."
+    },
+    "Vago's AI judges every unclear place against these.": {
+      "comment": "Settings explanation under the goals field."
+    },
+    "Vago's calls": {
+      "comment": "Day window heading for places the AI judge decided."
+    },
+    "WASTE": {
+      "comment": "Menu-bar pill while the place in front counts as procrastination. Keep it short and upper case."
+    },
+    "WORK": {
+      "comment": "Menu-bar pill while the place in front counts as work. Keep it short and upper case."
+    },
+    "Waste": {
+      "comment": "Name of the waste choice or legend entry."
+    },
+    "Watching the front app": {
+      "comment": "Popover status when a place is being tracked but no call exists yet."
+    },
+    "Wed": {
+      "comment": "Short weekday name."
+    },
+    "What Review opens: the Day window, one card at a time, or one list.": {
+      "comment": "Settings explanation of the evening review style picker."
+    },
+    "Window titles of every app": {
+      "comment": "Settings: Accessibility permission detail when granted."
+    },
+    "Work": {
+      "comment": "Accessibility label of the work switch.\nName of the work mode, for the tooltip and accessibility."
+    },
+    "Work hours": {
+      "comment": "Setup row label for the work hours."
+    },
+    "Work hours. Unlocking opens it for %lld minutes.": {
+      "comment": "Block card explanation. The argument is the number of minutes an unlock lasts."
+    },
+    "Work or waste?": {
+      "comment": "Evening review list heading."
+    },
+    "Work or waste? Each answer becomes a rule.": {
+      "comment": "Evening review offer subtitle."
+    },
+    "Work →": {
+      "comment": "Evening review card hint: swipe or press right for work."
+    },
+    "Wrong?": {
+      "comment": "Popover menu label for correcting the call on the place in front."
+    },
+    "You corrected this call.": {
+      "comment": "Note on a call of the AI judge that the owner changed."
+    },
+    "You corrected this place": {
+      "comment": "Tooltip of the Now line."
+    },
+    "Your answer today": {
+      "comment": "Tooltip of the Now line."
+    },
+    "corrected": {
+      "comment": "Day window badge on a call the owner corrected."
+    },
+    "every day": {
+      "comment": "Work-days label."
+    },
+    "iCloud": {
+      "comment": "Settings row label."
+    },
+    "iPhone": {
+      "comment": "Device name, the day-strip lane label.\nDevice name."
+    },
+    "iPhone minutes come from Screen Time reports and can lag a few minutes.": {
+      "comment": "Note under the iPhone lane of the day strip."
+    },
+    "mixed": {
+      "comment": "The word for a mixed call, in lower case, used inside sentences."
+    },
+    "neutral": {
+      "comment": "The word for a neutral call, in lower case, used inside sentences."
+    },
+    "nothing": {
+      "comment": "Hour tooltip of the day strip when no time was counted in that hour."
+    },
+    "productive on the %@": {
+      "comment": "Caption under the big share number when one device is chosen. The argument is the device name."
+    },
+    "productive, all devices": {
+      "comment": "Caption under the big share number in the Day window."
+    },
+    "to": {
+      "comment": "Setup: between the start and end time of the work hours."
+    },
+    "unsure": {
+      "comment": "Popover Now line: the place has no clear call yet."
+    },
+    "waste": {
+      "comment": "The word for a waste call, in lower case, used inside sentences."
+    },
+    "work": {
+      "comment": "The word for a work call, in lower case, used inside sentences."
+    },
+    "← Waste": {
+      "comment": "Evening review card hint: swipe or press left for waste."
+    },
+    "🌳 %lld this week": {
+      "comment": "Popover focus row: trees grown in the last 7 days. The argument is the count."
+    },
+    "🌳 Focus done: %lld minutes": {
+      "comment": "Toast when a focus session ends well. The argument is its length in minutes."
+    },
+    "🚶": {
+      "comment": "Emoji beside the move reminder in the popover."
+    },
+    "🚶 %lld min at the Mac. Time to move": {
+      "comment": "Move reminder title. The argument is the minutes at the Mac."
+    },
+    "🚶 Done. Next reminder after %lld min at the Mac": {
+      "comment": "Toast after a move was done. The argument is the minutes at the Mac before the next reminder."
+    },
+    "🥀 The tree wilted after %lld minutes": {
+      "comment": "Toast when a focus session ends badly. The argument is the minutes it lasted."
+    }
+  },
+  "version": "1.0"
+}

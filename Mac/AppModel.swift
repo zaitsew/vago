@@ -275,7 +275,7 @@ final class AppModel {
     var menuBar: (text: String, tint: Tint?) {
         if let focus, focus.state == .growing {
             let minutes = Int((focus.remaining(at: clock) / 60).rounded(.up))
-            return ("\(focus.stage(at: clock)) \(minutes)m", nil)
+            return (String(localized: "\(focus.stage(at: clock)) \(minutes)m", comment: "Menu-bar text during a focus session. First argument: the tree emoji; second: minutes left."), nil)
         }
         let text = "\(mood.emoji) \(share.text)"
         return (breaks.wantsMark(at: clock) ? "\(text) 🚶" : text, mood.tint)

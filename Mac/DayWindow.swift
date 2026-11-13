@@ -8,7 +8,7 @@ import VagoKit
 @MainActor
 enum DayWindow {
     static func make(model: AppModel) -> HostedWindow {
-        HostedWindow(title: "Today", size: NSSize(width: 720, height: 560), minSize: NSSize(width: 600, height: 440),
+        HostedWindow(title: String(localized: "Today", comment: "Title of the Day window."), size: NSSize(width: 720, height: 560), minSize: NSSize(width: 600, height: 440),
                      resizable: true, autosaveName: "VagoDay") { window in
             AnyView(DayView(model: model) { [weak window] title in window?.setTitle(title) })
         }
@@ -24,8 +24,15 @@ struct DayView: View {
     @State private var filter: DeviceFilter = .all
 
     enum DeviceFilter: String, CaseIterable, Identifiable {
-        case all = "All", mac = "Mac", iphone = "iPhone"
+        case all, mac, iphone
         var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .all: String(localized: "All", comment: "Device filter of the Day window: every device.")
+            case .mac: String(localized: "Mac", comment: "Device name.")
+            case .iphone: String(localized: "iPhone", comment: "Device name.")
+            }
+        }
         var devices: [Device] {
             switch self {
             case .all: [.mac, .iphone]
@@ -60,8 +67,8 @@ struct DayView: View {
                 }
                 if isToday {
                     HStack(alignment: .top, spacing: 16) {
-                        TopList(title: "Top waste", rows: model.top(.procrastination), color: Palette.waste)
-                        TopList(title: "Top work", rows: model.top(.productive), color: Palette.work)
+                        TopList(title: String(localized: "Top waste", comment: "Heading of the list of places where the most waste time went today."), rows: model.top(.procrastination), color: Palette.waste)
+                        TopList(title: String(localized: "Top work", comment: "Heading of the list of places where the most work time went today."), rows: model.top(.productive), color: Palette.work)
                     }
                     CallsList(model: model)
                 } else {
@@ -87,7 +94,7 @@ struct DayView: View {
             Button { go(later) } label: { Image(systemName: "chevron.right") }
                 .disabled(isToday)
                 .help("Next day")
-            Text(isToday ? "Today" : Format.dayTitle(day))
+            Text(verbatim: isToday ? String(localized: "Today", comment: "Day window header when the shown day is today.") : Format.dayTitle(day))
                 .font(.title2.weight(.semibold))
                 .padding(.leading, 4)
             if !isToday {
@@ -95,7 +102,7 @@ struct DayView: View {
             }
             Spacer()
             Picker("Devices", selection: $filter) {
-                ForEach(DeviceFilter.allCases) { Text($0.rawValue).tag($0) }
+                ForEach(DeviceFilter.allCases) { Text(verbatim: $0.label).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -126,7 +133,7 @@ struct DayView: View {
                 .monospacedDigit()
                 .foregroundStyle(Palette.color(share.tint))
             VStack(alignment: .leading, spacing: 4) {
-                Text(filter == .all ? "productive, all devices" : "productive on the \(filter.rawValue)")
+                Text(verbatim: filter == .all ? String(localized: "productive, all devices", comment: "Caption under the big share number in the Day window.") : String(localized: "productive on the \(filter.label)", comment: "Caption under the big share number when one device is chosen. The argument is the device name."))
                     .font(.headline)
                 Text(Format.caption(share))
                     .font(.callout)
@@ -163,7 +170,7 @@ private struct Legend: View {
         .font(.caption)
     }
 
-    private func item(_ name: String, _ style: AnyShapeStyle) -> some View {
+    private func item(_ name: LocalizedStringKey, _ style: AnyShapeStyle) -> some View {
         HStack(spacing: 6) {
             RoundedRectangle(cornerRadius: 2).fill(style).frame(width: 10, height: 10)
             Text(name).foregroundStyle(.secondary)
@@ -182,7 +189,7 @@ private struct TopList: View {
         GroupBox {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text(title).font(.headline)
+                    Text(verbatim: title).font(.headline)
                     Spacer()
                     Text("Mac only").font(.caption).foregroundStyle(.tertiary)
                 }
@@ -194,7 +201,7 @@ private struct TopList: View {
                     ForEach(rows, id: \.label) { row in
                         VStack(alignment: .leading, spacing: 3) {
                             HStack {
-                                Text(row.label).lineLimit(1).truncationMode(.middle)
+                                Text(verbatim: row.label).lineLimit(1).truncationMode(.middle)
                                 Spacer()
                                 Text(Format.duration(row.seconds)).monospacedDigit().foregroundStyle(.secondary)
                             }
@@ -291,14 +298,14 @@ private struct CallRow: View {
     private var selection: Bucket { item.bucket == .ambiguous ? .procrastination : item.bucket }
 
     private var reason: String {
-        if item.reason == CallReason.corrected { return "You corrected this call." }
+        if item.reason == CallReason.corrected { return String(localized: "You corrected this call.", comment: "Note on a call of the AI judge that the owner changed.") }
         let text = Format.reason(item.reason)
-        return item.unsure ? "Unsure: \(text)" : "AI: \(text)"
+        return item.unsure ? String(localized: "Unsure: \(text)", comment: "Note on a call the AI judge was unsure about. The argument is its reason.") : String(localized: "AI: \(text)", comment: "Note on a call of the AI judge. The argument is its reason.")
     }
 }
 
 private struct Badge: View {
-    let text: String
+    let text: LocalizedStringKey
     let color: Color
 
     var body: some View {
