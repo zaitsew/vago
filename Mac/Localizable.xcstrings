@@ -49,6 +49,9 @@
         }
       }
     },
+    "%@ counts as waste": {
+      "comment": "Drift notice subtitle, variant B. The argument is the place name."
+    },
     "%@ denied": {
       "comment": "Settings: a browser the owner denied Automation for. The argument is the browser name."
     },
@@ -134,6 +137,31 @@
     "%lld min left": {
       "comment": "Popover focus row: minutes left in the running focus session."
     },
+    "%lld min left of %lld today": {
+      "comment": "Drift notice body: minutes left of the daily budget. First argument: minutes left; second: the budget.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld min left of %2$lld today"
+          }
+        }
+      }
+    },
+    "%lld min over budget": {
+      "comment": "Drift notice title, variant B, when over budget. The argument is minutes over."
+    },
+    "%lld min over your %lld today": {
+      "comment": "Drift notice body when over budget. First argument: minutes over; second: the budget in minutes.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld min over your %2$lld today"
+          }
+        }
+      }
+    },
     "%lld min so far": {
       "comment": "Caption of the share before 15 active minutes. The argument is the minutes counted so far."
     },
@@ -147,6 +175,17 @@
           "stringUnit": {
             "state": "new",
             "value": "%1$lld of %2$lld answered"
+          }
+        }
+      }
+    },
+    "%lld of %lld min left": {
+      "comment": "Drift notice title, variant B: minutes left of the daily budget. First argument: minutes left; second: the budget.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld of %2$lld min left"
           }
         }
       }
@@ -258,6 +297,20 @@
     },
     "Block": {
       "comment": "Setup: the place stays closed in work hours."
+    },
+    "Budget used: %lld min": {
+      "comment": "Drift notice title, variant B, when the budget is exactly used up. The argument is the budget in minutes."
+    },
+    "Budget used: %lld of %lld min today": {
+      "comment": "Drift notice body when the budget is exactly used up. The arguments are the budget in minutes, twice.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Budget used: %1$lld of %2$lld min today"
+          }
+        }
+      }
     },
     "Cancel": {
       "comment": "Button that closes a dialog or window without saving."
@@ -515,6 +568,9 @@
     "Procrastination": {
       "comment": "Name of the procrastination mode, for the tooltip and accessibility."
     },
+    "Procrastination · %@": {
+      "comment": "Drift notice title, variant A. The argument is the place name."
+    },
     "Productive today · all devices": {
       "comment": "Popover caption above the big productive share."
     },
@@ -579,6 +635,9 @@
     },
     "Switch place to work": {
       "comment": "Right-click menu item before any place was seen."
+    },
+    "Switch to work": {
+      "comment": "Drift notice button: counts the place as work."
     },
     "Sync": {
       "comment": "Settings section heading for iCloud."
@@ -708,6 +767,12 @@
     },
     "in the last %lld days": {
       "comment": "Setup: the period the minutes on the tiles cover. The argument is the number of days kept, from 2 to 6."
+    },
+    "min left": {
+      "comment": "Notice picture caption under the number of minutes left."
+    },
+    "min over": {
+      "comment": "Notice picture caption under the number when over budget."
     },
     "mixed": {
       "comment": "The word for a mixed call, in lower case, used inside sentences."

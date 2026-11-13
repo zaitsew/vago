@@ -15,6 +15,13 @@ enum VagoMain {
             NSApplication.shared.setActivationPolicy(.accessory)
             exit(RenderVariants.run(into: dir) ? 0 : 1)
         }
+        // `--post-sample-notice <a|b> [--capture <file>]` posts the sample notice and exits; it never
+        // asks for permission and posts only when notifications are already authorized.
+        if let sample = SampleNotice.request(in: CommandLine.arguments) {
+            NSApplication.shared.setActivationPolicy(.accessory)
+            SampleNotice.run(sample)
+            NSApplication.shared.run()
+        }
         #endif
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)

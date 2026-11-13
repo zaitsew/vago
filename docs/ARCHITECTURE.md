@@ -290,9 +290,16 @@ productive to work, procrastination and ambiguous to procrastination, and neutra
     unlock (`GuardState.unlock`) is a 3-second hold. Over budget, the ready pause card keeps the orange
     ring and shows an exclamation mark, never a green check.
   - *Drift notice*: `DriftWatch.tick(Mode(bucket), guarded:)` per second, `idle()` when locked or
-    idle. A true result posts a local notification (`NoticeCenter`): "Procrastination · Instagram"
-    and "12 of 30 min today", a statement, never a question. Variant B adds a "Switch to work"
-    action. Authorization is asked for when setup finishes.
+    idle. A true result posts a local notification (`NoticeCenter.post(NoticePayload)`), a statement,
+    never a question. Variant A: "Procrastination · Instagram", "18 min left of 30 today", a picture
+    with the WASTE pill, the minutes left and a budget bar. Variant B: "18 of 30 min left", subtitle
+    "Instagram counts as waste", a budget ring. The picture is drawn with SwiftUI at runtime
+    (`NoticeArt`, green, then orange, then red as the budget goes) and attached as a
+    `UNNotificationAttachment`. Both variants carry the "Switch to work" button (the toggle). All
+    notices share one `threadIdentifier`; the identifier is per day, so a new notice replaces the
+    old. `relevanceScore` rises with the budget used. No time-sensitive level (no entitlement).
+    Authorization is asked for when setup finishes. Debug builds: `--post-sample-notice <a|b>
+    [--capture <file>]` posts the sample only if already authorized, and never asks.
   - *Setup* (`SetupWindow`): first run of the loop and later "Guarded places..." in Settings. The
     owner taps up to 3 places that took the most time; a picked place shows its control (Pause: a
     timer ring, "5 s wait"; Block: a lock, "until 18:00"). Variant A is a wall of tiles, B the same
