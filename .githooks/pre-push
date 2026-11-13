@@ -81,7 +81,7 @@ unset _tlg_home _tlg_rc _tlg_remote _tlg_in _tlg_want _tlg_got _tlg_l _tlg_lsha 
 # A push whose commits change only documents cannot break the build, so it skips the check below and takes no
 # build slot on the shared Mac. Documents are Markdown files at the top level (README.md, CHANGELOG.md) and
 # Markdown or pictures under docs/. The leak gate above has already run. Everything else runs the full check:
-# any other path, a rename, a tag, a merge that brings code, or a range this block cannot read.
+# any other path, a rename, a tag, a merge that brings or drops code, or a range this block cannot read.
 # PREPUSH_DOCS_SKIP=0 turns the skip off for one push.
 _do_refs=$(cat)
 _do_skip=1
@@ -91,12 +91,23 @@ while read -r _do_l _do_lsha _do_r _do_rsha; do
   [ "$_do_skip" = 1 ] || break
   case "${_do_lsha:-}" in *[!0]*) ;; *) continue ;; esac
   case "$_do_l" in refs/tags/*) _do_skip=0; break ;; esac
-  _do_range="$_do_lsha --not --remotes=${1:-origin}"
+  _do_files=
+  _do_known=0
   case "${_do_rsha:-}" in *[!0]*)
-    if git cat-file -e "$_do_rsha^{commit}" 2>/dev/null; then _do_range="$_do_lsha --not $_do_rsha"; fi ;;
+    if git cat-file -e "$_do_rsha^{commit}" 2>/dev/null; then
+      # The branch exists on the remote: compare the two trees. That is exactly what the push changes there, so a
+      # merge that drops code (`git merge -s ours`) shows the dropped files. --no-renames lists both names.
+      _do_files=$(git -c core.quotePath=true diff --no-renames --name-only "$_do_rsha" "$_do_lsha" 2>/dev/null) || { _do_skip=0; break; }
+      _do_known=1
+    fi ;;
   esac
-  # -m --first-parent lists what a merge changes against the branch it lands on; --no-renames lists both names.
-  _do_files=$(git -c core.quotePath=true log -m --first-parent --no-renames --name-only --pretty=format: $_do_range 2>/dev/null) || { _do_skip=0; break; }
+  if [ "$_do_known" = 0 ]; then
+    # A new branch: list the commits no branch of this remote has. A merge among them runs the full check.
+    _do_range="$_do_lsha --not --remotes=${1:-origin}"
+    _do_merges=$(git rev-list --count --merges $_do_range 2>/dev/null) || { _do_skip=0; break; }
+    [ "$_do_merges" = 0 ] || { _do_skip=0; break; }
+    _do_files=$(git -c core.quotePath=true log --no-renames --name-only --pretty=format: $_do_range 2>/dev/null) || { _do_skip=0; break; }
+  fi
   # Here-documents, not pipes: under `set -o pipefail` a writer cut off by an early grep exit would read as "no match".
   _do_files=$(sed '/^$/d' <<_DO_EOF
 $_do_files
@@ -118,7 +129,7 @@ fi
 exec <<_DO_EOF
 $_do_refs
 _DO_EOF
-unset _do_refs _do_skip _do_seen _do_l _do_lsha _do_r _do_rsha _do_range _do_files
+unset _do_refs _do_skip _do_seen _do_l _do_lsha _do_r _do_rsha _do_range _do_known _do_merges _do_files
 # <<< docs-only push
 
 # The push gate: ./check.sh (package tests + both app builds), which check.sh's
