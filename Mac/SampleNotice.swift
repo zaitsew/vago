@@ -34,7 +34,10 @@ enum SampleNotice {
             try? await Task.sleep(nanoseconds: 2_000_000_000)
             if let path = request.capture, let screen = NSScreen.main {
                 let frame = screen.frame
-                let rect = "\(Int(frame.minX + frame.width - 460)),\(Int(frame.minY)),460,170"
+                // screencapture counts from the top-left of the primary display; AppKit from its bottom-left.
+                let primaryHeight = NSScreen.screens.first?.frame.height ?? frame.height
+                let top = primaryHeight - frame.maxY
+                let rect = "\(Int(frame.maxX - 460)),\(Int(top)),460,170"
                 let process = Process()
                 process.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
                 process.arguments = ["-x", "-R", rect, path]
