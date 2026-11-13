@@ -81,7 +81,7 @@ unset _tlg_home _tlg_rc _tlg_remote _tlg_in _tlg_want _tlg_got _tlg_l _tlg_lsha 
 # A push whose commits change only documents cannot break the build, so it skips the check below and takes no
 # build slot on the shared Mac. Documents are Markdown files at the top level (README.md, CHANGELOG.md) and
 # Markdown or pictures under docs/. The leak gate above has already run. Everything else runs the full check:
-# any other path, a rename, a tag, a merge that brings or drops code, or a range this block cannot read.
+# any other path, a rename, a tag, a merge that brings or drops code, a remote tip this clone has not fetched.
 # PREPUSH_DOCS_SKIP=0 turns the skip off for one push.
 _do_refs=$(cat)
 _do_skip=1
@@ -90,16 +90,16 @@ _do_seen=0
 while read -r _do_l _do_lsha _do_r _do_rsha; do
   [ "$_do_skip" = 1 ] || break
   case "${_do_lsha:-}" in *[!0]*) ;; *) continue ;; esac
-  case "$_do_l" in refs/tags/*) _do_skip=0; break ;; esac
+  case "$_do_l $_do_r" in refs/tags/*|*" refs/tags/"*) _do_skip=0; break ;; esac
   _do_files=
   _do_known=0
   case "${_do_rsha:-}" in *[!0]*)
-    if git cat-file -e "$_do_rsha^{commit}" 2>/dev/null; then
-      # The branch exists on the remote: compare the two trees. That is exactly what the push changes there, so a
-      # merge that drops code (`git merge -s ours`) shows the dropped files. --no-renames lists both names.
-      _do_files=$(git -c core.quotePath=true diff --no-renames --name-only "$_do_rsha" "$_do_lsha" 2>/dev/null) || { _do_skip=0; break; }
-      _do_known=1
-    fi ;;
+    # A remote tip this clone does not have (not fetched yet): what the push replaces is unknown, so check.
+    git cat-file -e "$_do_rsha^{commit}" 2>/dev/null || { _do_skip=0; break; }
+    # The branch exists on the remote: compare the two trees. That is exactly what the push changes there, so a
+    # merge that drops code (`git merge -s ours`) shows the dropped files. --no-renames lists both names.
+    _do_files=$(git -c core.quotePath=true diff --no-renames --name-only "$_do_rsha" "$_do_lsha" 2>/dev/null) || { _do_skip=0; break; }
+    _do_known=1 ;;
   esac
   if [ "$_do_known" = 0 ]; then
     # A new branch: list the commits no branch of this remote has. A merge among them runs the full check.
