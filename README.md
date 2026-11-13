@@ -42,3 +42,5 @@ for the Mac app and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it work
 ## License
 
 Apache 2.0.
+
+<!-- teyla:reviewed 2026-11-13 -->
