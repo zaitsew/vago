@@ -101,7 +101,8 @@ struct WorkSwitch: View {
                 .fill(isOn ? Palette.work : Color.gray.opacity(0.35))
                 .frame(width: 36, height: 21)
                 .overlay(alignment: isOn ? .trailing : .leading) {
-                    Circle().fill(.white).shadow(color: .black.opacity(0.25), radius: 1, y: 0.5).padding(2)
+                    Circle().fill(.white).shadow(color: .black.opacity(0.25), radius: 1, y: 0.5)
+                        .frame(width: 17, height: 17).padding(2)
                 }
                 .animation(.easeOut(duration: 0.12), value: isOn)
         }
