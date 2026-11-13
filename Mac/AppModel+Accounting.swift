@@ -32,6 +32,12 @@ extension AppModel {
 
         if answer == nil, toggles[placeKey] == nil { learn(from: obs, classification: c, seconds: seconds) }
         today.add(c.bucket == .ambiguous ? .procrastination : c.bucket, seconds: seconds, at: now)
+        if !ownWindow {
+            placeWeek.touch(today.day)
+            if c.bucket == .procrastination || c.bucket == .ambiguous {
+                placeWeek.add(seconds, key: PlaceWeek.key(for: obs), day: today.day)
+            }
+        }
         tickFocus(bucket: c.bucket, seconds: seconds, now: now)
         record(obs, key: key, classification: c, seconds: seconds, now: now)
         commit(now: now)
@@ -165,6 +171,8 @@ extension AppModel {
         nudger?.forgetDay()
         eveningReviewOffered = nil
         toggles = [:]
+        placeWeek.touch(day)
+        placeWeek.prune()
         lastToggleKey = nil
         limit.roll(to: day, ledger: ledger)
         let cutoff = day.adding(days: -60)

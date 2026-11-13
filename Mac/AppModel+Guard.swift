@@ -144,9 +144,10 @@ extension AppModel {
 
     // MARK: Setup and settings
 
-    /// Setup's starting point: the current list, and proposals from today's sessions.
+    /// Setup's starting point: the current list, and the places that took the most time in the kept days.
     func makeSetupDraft() -> SetupDraft {
-        SetupDraft(list: guardList, proposals: GuardList.proposals(from: sessions, limit: 3), front: toggleTarget?.sample)
+        let (proposals, days) = setupProposals()
+        return SetupDraft(list: guardList, proposals: proposals, days: days)
     }
 
     /// Setup's Done: the list goes live, notifications are asked for.

@@ -72,6 +72,7 @@ final class AppModel {
     var toggles: [String: Bucket]
     var variants: DesignVariants
     var setupOffered: Bool
+    var placeWeek: PlaceWeek
 
     // MARK: Live
     var clock = Date()
@@ -148,6 +149,7 @@ final class AppModel {
         drift = state.drift
         toggles = state.toggles
         setupOffered = state.setupOffered
+        placeWeek = state.placeWeek
         var variants = state.variants
         variants.applyDefaults()
         self.variants = variants
@@ -232,6 +234,7 @@ final class AppModel {
         s.toggles = toggles
         s.variants = variants
         s.setupOffered = setupOffered
+        s.placeWeek = placeWeek
         return s
     }
 
