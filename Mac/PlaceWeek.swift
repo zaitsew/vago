@@ -32,9 +32,18 @@ struct PlaceWeek: Codable, Equatable, Sendable {
         if days[day.id] == nil { days[day.id] = [:] }
     }
 
-    mutating func add(_ seconds: Int, key: String, day: DayKey) {
-        guard seconds > 0 else { return }
-        days[day.id, default: [:]][key, default: 0] += seconds
+    /// Stores a finished day's waste seconds per place, replacing what the day held.
+    mutating func record(_ seconds: [String: Int], day: DayKey) {
+        days[day.id] = seconds.filter { $0.value > 0 }
+    }
+
+    /// Waste seconds per place key in `sessions`, as they read now (corrections included).
+    static func waste(in sessions: [Session]) -> [String: Int] {
+        var sums: [String: Int] = [:]
+        for s in sessions where s.guess == .procrastination || s.guess == .ambiguous {
+            sums[key(for: s.sample.sample), default: 0] += s.seconds
+        }
+        return sums
     }
 
     /// Keeps the last `keptDays` tracked days. Called on every day change.
@@ -43,14 +52,15 @@ struct PlaceWeek: Codable, Equatable, Sendable {
         days = days.filter { keep.contains($0.key) }
     }
 
-    var dayCount: Int { days.count }
-
-    /// Seconds per place key over every kept day.
-    func totals() -> [String: Int] {
+    /// Seconds per place key over every kept day except `excluded` (today, read from sessions).
+    func totals(excluding excluded: DayKey) -> [String: Int] {
         var sums: [String: Int] = [:]
-        for day in days.values { for (key, seconds) in day { sums[key, default: 0] += seconds } }
+        for (id, day) in days where id != excluded.id { for (key, seconds) in day { sums[key, default: 0] += seconds } }
         return sums
     }
+
+    /// Kept days other than `excluded`.
+    func dayCount(excluding excluded: DayKey) -> Int { days.keys.filter { $0 != excluded.id }.count }
 }
 
 /// One place the setup proposes and the seconds it took in the kept days.
@@ -60,23 +70,17 @@ struct SetupProposal: Equatable {
 }
 
 extension AppModel {
-    /// The setup's proposals: places ranked by the seconds they took over the kept days, and how
-    /// many days that covers. Today's sessions fill in for a place the archive has not seen yet
-    /// (the first day after the archive was added). `GuardList.proposals` decides which of today's
-    /// sessions are waste candidates.
+    /// The setup's proposals: places ranked by the seconds they took over the kept days plus
+    /// today, and how many days that covers. `GuardList.proposals` names today's places.
     func setupProposals(limit: Int = 6) -> (items: [SetupProposal], days: Int) {
-        var totals = placeWeek.totals()
-        let todayKnown = placeWeek.days[today.day.id] ?? [:]
+        // Past days come from the archive; today always comes from the sessions, so a correction
+        // made today moves the minutes at once and nothing is counted twice.
+        var totals = placeWeek.totals(excluding: today.day)
+        for (key, seconds) in PlaceWeek.waste(in: sessions) { totals[key, default: 0] += seconds }
         var places: [String: GuardedPlace] = [:]
         for place in GuardList.proposals(from: sessions, limit: 20) {
             let key = place.host.map { "h:" + $0.lowercased() } ?? "b:" + (place.bundleID ?? "").lowercased()
             places[key] = place
-            if todayKnown[key] == nil {
-                let seconds = sessions.filter { $0.guess == .procrastination || $0.guess == .ambiguous }
-                    .filter { PlaceWeek.key(for: $0.sample.sample) == key }
-                    .reduce(0) { $0 + $1.seconds }
-                totals[key, default: 0] += seconds
-            }
         }
         let ranked = totals.filter { $0.value >= 60 }
             .sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
@@ -85,7 +89,7 @@ extension AppModel {
             guard let place = places[key].map(GuardNames.pretty) ?? PlaceArt.place(forKey: key) else { return nil }
             return SetupProposal(place: place, seconds: seconds)
         }
-        return (items, max(placeWeek.dayCount, sessions.isEmpty ? 0 : 1))
+        return (items, placeWeek.dayCount(excluding: today.day) + (sessions.isEmpty ? 0 : 1))
     }
 }
 

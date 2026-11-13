@@ -427,7 +427,13 @@ struct SetupContent: View {
                             }
                         }
                         Spacer(minLength: 0)
-                        Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.accentColor)
+                        Button { withAnimation(.snappy(duration: 0.2)) { draft.toggle(value.id) } } label: {
+                            Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.accentColor)
+                                .font(.title3).contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .help(Text("Stop guarding this place", comment: "Setup: tooltip of the check on a picked tile; a click unpicks it."))
+                        .accessibilityLabel(Text("Stop guarding \(value.place.name)", comment: "Setup: accessibility label of the check on a picked tile."))
                     }
                     ModeChoice(mode: value.place.mode, until: draft.untilText, vertical: true) { draft.setMode(value.id, $0) }
                 }
