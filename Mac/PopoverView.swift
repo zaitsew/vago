@@ -117,7 +117,7 @@ private struct NowRow: View {
                 .controlSize(.small)
             } else if let pause = model.pause {
                 Image(systemName: "pause.circle").foregroundStyle(.tertiary)
-                Text(pause == .idle ? "Paused · no input" : "Paused · screen locked")
+                Text(pause == .idle ? String(localized: "Paused · no input", comment: "Popover status while no input was seen for two minutes.") : String(localized: "Paused · screen locked", comment: "Popover status while the screen is locked."))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -134,14 +134,14 @@ private struct NowRow: View {
 
     @ViewBuilder
     private func place(_ now: NowPlace) -> some View {
-        let word = now.unclear ? "unsure" : Words.bucket(now.bucket)
+        let word = now.unclear ? String(localized: "unsure", comment: "Popover Now line: the place has no clear call yet.") : Words.bucket(now.bucket)
         Circle()
             .fill(now.unclear ? Palette.neutral : Palette.style(for: now.bucket))
             .frame(width: 7, height: 7)
         HStack(spacing: 0) {
             Text("Now: ").foregroundStyle(.secondary)
-            Text(now.label).lineLimit(1).truncationMode(.middle)
-            Text(" — \(word)").foregroundStyle(.secondary).fixedSize()
+            Text(verbatim: now.label).lineLimit(1).truncationMode(.middle)
+            Text(verbatim: " — \(word)").foregroundStyle(.secondary).fixedSize()
         }
         .font(.callout)
         .help(Self.help(now))
@@ -149,7 +149,7 @@ private struct NowRow: View {
         // A neutral rule (Finder, Settings) is not worth a correction.
         if !(now.source == .rule && now.bucket == .neutral) {
             Menu {
-                Section("Count \(now.label) as") {
+                Section(String(localized: "Count \(now.label) as", comment: "Menu header above the Work, Neutral and Waste choices. The argument is the place name.")) {
                     ForEach([Bucket.productive, .neutral, .procrastination], id: \.self) { bucket in
                         Button(Words.bucket(bucket).capitalized) { model.correctCurrent(as: bucket) }
                             .disabled(!now.unclear && bucket == now.bucket)
@@ -169,10 +169,10 @@ private struct NowRow: View {
 
     private static func help(_ now: NowPlace) -> String {
         switch now.source {
-        case .rule: now.reason == CallReason.corrected ? "You corrected this place" : "Settled by a rule"
-        case .answer: "Your answer today"
-        case .judge: "AI: \(Format.reason(now.reason))"
-        case .fallback: now.unclear ? "AI unsure: \(Format.reason(now.reason)). Counted as neutral." : Format.reason(now.reason)
+        case .rule: now.reason == CallReason.corrected ? String(localized: "You corrected this place", comment: "Tooltip of the Now line.") : String(localized: "Settled by a rule", comment: "Tooltip of the Now line.")
+        case .answer: String(localized: "Your answer today", comment: "Tooltip of the Now line.")
+        case .judge: String(localized: "AI: \(Format.reason(now.reason))", comment: "Tooltip of the Now line. The argument is the AI judge's one-sentence reason.")
+        case .fallback: now.unclear ? String(localized: "AI unsure: \(Format.reason(now.reason)). Counted as neutral.", comment: "Tooltip of the Now line. The argument is the AI judge's reason.") : Format.reason(now.reason)
         }
     }
 }
@@ -194,7 +194,7 @@ private struct FocusRow: View {
                 Button("Stop") { model.giveUpFocus() }
             } else {
                 Image(systemName: "leaf").foregroundStyle(.secondary)
-                Text(trees == 0 ? "Focus" : "🌳 \(trees) this week")
+                Text(trees == 0 ? String(localized: "Focus", comment: "Popover focus row label before any tree was grown.") : String(localized: "🌳 \(trees) this week", comment: "Popover focus row: trees grown in the last 7 days. The argument is the count."))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -225,7 +225,7 @@ private struct MoveRow: View {
             if model.breaks.wantsMark(at: model.clock) {
                 let move = model.breaks.move
                 Text("🚶").font(.system(size: 15))
-                Text("\(streak / 60) min at the Mac — \(move.title)")
+                Text(verbatim: String(localized: "\(streak / 60) min at the Mac — \(move.title)", comment: "Popover move row. First argument: minutes at the Mac; second: the name of the suggested move."))
                     .font(.caption)
                     .lineLimit(2)
                     .help(move.how)
@@ -240,7 +240,7 @@ private struct MoveRow: View {
                 .fixedSize()
             } else {
                 Image(systemName: "figure.walk").foregroundStyle(.secondary)
-                Text(streak > 0 ? "\(Format.minutes(streak)) at the Mac · \(moves)" : "On a break · \(moves)")
+                Text(verbatim: streak > 0 ? String(localized: "\(Format.minutes(streak)) at the Mac · \(moves)", comment: "Popover move row. First argument: a duration; second: the moves-today phrase.") : String(localized: "On a break · \(moves)", comment: "Popover move row while the owner is on a break. The argument is the moves-today phrase."))
                     .font(.caption)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
@@ -256,7 +256,7 @@ private struct MoveRow: View {
 
     private var moves: String {
         let n = model.movesToday
-        return n == 1 ? "1 move today" : "\(n) moves today"
+        return n == 1 ? String(localized: "1 move today", comment: "Popover: one move done today.") : String(localized: "\(n) moves today", comment: "Popover: moves done today. The argument is the count.")
     }
 }
 

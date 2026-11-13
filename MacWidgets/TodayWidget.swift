@@ -121,18 +121,20 @@ struct TodayWidgetView: View {
 
     private var captionText: String {
         guard let snapshot else {
-            return display == .missing ? "Open Vago" : "New day. Open Vago to start counting."
+            return display == .missing
+                ? String(localized: "Open Vago", comment: "Widget caption before the app wrote any data.")
+                : String(localized: "New day. Open Vago to start counting.", comment: "Widget caption on a new day before the app wrote data.")
         }
         switch display {
-        case .early(let minutes): return "\(minutes) min so far"
+        case .early(let minutes): return String(localized: "\(minutes) min so far", comment: "Widget caption before 15 active minutes. The argument is the minutes counted so far.")
         default:
-            return "\(Self.minutes(snapshot.productiveMinutes * 60)) work · \(Self.minutes(snapshot.wasteMinutes * 60)) waste"
+            return String(localized: "\(Self.minutes(snapshot.productiveMinutes * 60)) work · \(Self.minutes(snapshot.wasteMinutes * 60)) waste", comment: "Widget caption: work and waste time. Each argument is a duration such as 3h 12m.")
         }
     }
 
     private var footerText: String {
-        guard let snapshot else { return "no data for today" }
-        return "as of \(snapshot.updatedAt.formatted(date: .omitted, time: .shortened))"
+        guard let snapshot else { return String(localized: "no data for today", comment: "Widget footer when there is no snapshot for today.") }
+        return String(localized: "as of \(snapshot.updatedAt.formatted(date: .omitted, time: .shortened))", comment: "Widget footer. The argument is the clock time of the last update.")
     }
 
     /// "3h 12m" or "40m", the same as the app's captions.
@@ -146,9 +148,9 @@ struct TodayWidgetView: View {
             if let snapshot {
                 DayStrip(
                     lanes: [
-                        .init(name: "Mac", hours: snapshot.macHours, hasData: true),
-                        .init(name: "iPhone", hours: snapshot.iphoneHours, hasData: !snapshot.iphoneHours.isEmpty,
-                              note: snapshot.iphoneHours.isEmpty ? "no iPhone data" : nil),
+                        .init(name: String(localized: "Mac", comment: "Device name, the day-strip lane label."), hours: snapshot.macHours, hasData: true),
+                        .init(name: String(localized: "iPhone", comment: "Device name, the day-strip lane label."), hours: snapshot.iphoneHours, hasData: !snapshot.iphoneHours.isEmpty,
+                              note: snapshot.iphoneHours.isEmpty ? String(localized: "no iPhone data", comment: "Widget day-strip note when the iPhone has not reported.") : nil),
                     ],
                     laneHeight: 40, labelWidth: 38, cellSpacing: 1, labelEvery: 4,
                     nowSlot: DayKey.hourSlot(of: entry.date)

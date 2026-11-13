@@ -36,8 +36,7 @@ final class StatusItemController: NSObject {
     func update() {
         let (text, tint) = model.menuBar
         let mode = model.currentMode
-        let variant = model.variants.modeIcon
-        let key = "\(text)|\(tint?.rawValue ?? "-")|\(mode.rawValue)|\(variant.rawValue)"
+        let key = "\(text)|\(tint?.rawValue ?? "-")|\(mode.rawValue)"
         guard key != shown else { return }
         shown = key
         let color: NSColor = switch tint {
@@ -48,9 +47,9 @@ final class StatusItemController: NSObject {
         }
         let font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .medium)
         item.button?.attributedTitle = NSAttributedString(string: text, attributes: [.foregroundColor: color, .font: font])
-        item.button?.image = ModeBadgeImage.make(mode: mode, variant: variant, scale: NSScreen.main?.backingScaleFactor ?? 2)
+        item.button?.image = ModeBadgeImage.make(mode: mode, scale: NSScreen.main?.backingScaleFactor ?? 2)
         item.button?.imagePosition = .imageLeading
-        item.button?.toolTip = "Vago · \(ModeBadge.name(mode))"
+        item.button?.toolTip = String(localized: "Vago · \(ModeBadge.name(mode))", comment: "Tooltip of the menu-bar item. The argument is the mode name.")
     }
 
     func showPopover() {
@@ -99,16 +98,19 @@ final class StatusItemController: NSObject {
         switchItem.target = self
         switchItem.isEnabled = model.toggleTarget != nil
         menu.addItem(.separator())
-        menu.addItem(withTitle: "Day", action: #selector(openDay), keyEquivalent: "d").target = self
-        menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",").target = self
+        menu.addItem(withTitle: String(localized: "Day", comment: "Right-click menu item: opens the Day window."), action: #selector(openDay), keyEquivalent: "d").target = self
+        menu.addItem(withTitle: String(localized: "Settings…", comment: "Right-click menu item: opens Settings."), action: #selector(openSettings), keyEquivalent: ",").target = self
         menu.addItem(.separator())
-        menu.addItem(withTitle: "Quit Vago", action: #selector(quit), keyEquivalent: "q").target = self
+        menu.addItem(withTitle: String(localized: "Quit Vago", comment: "Right-click menu item: quits the app."), action: #selector(quit), keyEquivalent: "q").target = self
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height + 5), in: button)
     }
 
     private func switchTitle() -> String {
-        guard let target = model.toggleTarget else { return "Switch place to work" }
-        return "Switch \(model.displayName(target)) to \(model.toggleIsWork ? "procrastination" : "work")"
+        guard let target = model.toggleTarget else { return String(localized: "Switch place to work", comment: "Right-click menu item before any place was seen.") }
+        let name = model.displayName(target)
+        return model.toggleIsWork
+            ? String(localized: "Switch \(name) to procrastination", comment: "Right-click menu item. The argument is the place name.")
+            : String(localized: "Switch \(name) to work", comment: "Right-click menu item. The argument is the place name.")
     }
 
     @objc private func toggleMode() { model.toggleCurrent() }

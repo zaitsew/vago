@@ -9,6 +9,10 @@ targets:
       - path: Mac
         excludes:
           - "*.entitlements"
+          - Localizable.xcstrings
+      # The String Catalog: English only for now; a comment per key, so a later decision can add Russian.
+      - path: Mac/Localizable.xcstrings
+        buildPhase: resources
     dependencies:
       - package: VagoKit
         product: VagoKit
@@ -48,6 +52,8 @@ targets:
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: complete
         SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
 
   # The desktop / Notification Center widget. Sandboxed; reads widget.json that the app writes
   # into the App Group container. It shares three pure files with the app.
@@ -60,6 +66,9 @@ targets:
         excludes:
           - "*.entitlements"
           - Info.plist
+          - Localizable.xcstrings
+      - path: MacWidgets/Localizable.xcstrings
+        buildPhase: resources
       - Mac/WidgetSnapshot.swift
       - Mac/DayStrip.swift
       - Mac/Style.swift
@@ -87,6 +96,8 @@ targets:
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: complete
         SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
 
 schemes:
   VagoMac:

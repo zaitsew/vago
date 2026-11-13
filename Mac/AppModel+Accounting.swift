@@ -164,7 +164,7 @@ extension AppModel {
         previousPlace = nil
         nudger?.forgetDay()
         eveningReviewOffered = nil
-        if variants.toggleResets { toggles = [:] }
+        toggles = [:]
         lastToggleKey = nil
         limit.roll(to: day, ledger: ledger)
         let cutoff = day.adding(days: -60)
@@ -208,8 +208,8 @@ extension AppModel {
         focus = nil
         let minutes = session.focusSeconds(at: clock) / 60
         switch session.state {
-        case .grown: lastToast = "🌳 Focus done: \(session.minutes) minutes"
-        case .wilted: lastToast = "🥀 The tree wilted after \(minutes) minutes"
+        case .grown: lastToast = String(localized: "🌳 Focus done: \(session.minutes) minutes", comment: "Toast when a focus session ends well. The argument is its length in minutes.")
+        case .wilted: lastToast = String(localized: "🥀 The tree wilted after \(minutes) minutes", comment: "Toast when a focus session ends badly. The argument is the minutes it lasted.")
         case .abandoned: lastToast = nil
         case .growing: break
         }
@@ -323,10 +323,10 @@ extension AppModel {
 enum Words {
     static func bucket(_ b: Bucket) -> String {
         switch b {
-        case .productive: "work"
-        case .procrastination: "waste"
-        case .neutral: "neutral"
-        case .ambiguous: "mixed"
+        case .productive: String(localized: "work", comment: "The word for a work call, in lower case, used inside sentences.")
+        case .procrastination: String(localized: "waste", comment: "The word for a waste call, in lower case, used inside sentences.")
+        case .neutral: String(localized: "neutral", comment: "The word for a neutral call, in lower case, used inside sentences.")
+        case .ambiguous: String(localized: "mixed", comment: "The word for a mixed call, in lower case, used inside sentences.")
         }
     }
 }

@@ -1,0 +1,128 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ neutral": {
+      "comment": "Hour tooltip: neutral time in that hour. The argument is a duration."
+    },
+    "%@ waste": {
+      "comment": "Hour tooltip: waste time in that hour. The argument is a duration."
+    },
+    "%@ work": {
+      "comment": "Hour tooltip: work time in that hour. The argument is a duration."
+    },
+    "%@ work · %@ neutral · %@ waste": {
+      "comment": "The day split under the share. Each argument is a duration such as 3h 12m.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ work · %2$@ neutral · %3$@ waste"
+          }
+        }
+      }
+    },
+    "%@ work · %@ waste": {
+      "comment": "Widget caption: work and waste time. Each argument is a duration such as 3h 12m.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ work · %2$@ waste"
+          }
+        }
+      }
+    },
+    "%@: most waste at %lld:00": {
+      "comment": "Accessibility summary of one day-strip lane. First argument: the device name; second: the hour of the day with the most waste.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@: most waste at %2$lld:00"
+          }
+        }
+      }
+    },
+    "%@: no waste": {
+      "comment": "Accessibility summary of one day-strip lane with no waste. The argument is the device name."
+    },
+    "%lld min so far": {
+      "comment": "Caption of the share before 15 active minutes. The argument is the minutes counted so far.\nWidget caption before 15 active minutes. The argument is the minutes counted so far."
+    },
+    "%lld percent": {
+      "comment": "Accessibility value of a progress bar. The argument is the percentage."
+    },
+    "%lldh %@m": {
+      "comment": "A duration of hours and minutes. First argument: hours; second: minutes with two digits. Example: 3h 12m.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lldh %2$@m"
+          }
+        }
+      }
+    },
+    "%lldm": {
+      "comment": "A duration in whole minutes. Example: 12m."
+    },
+    "%llds": {
+      "comment": "A duration under a minute, in seconds. Example: 45s."
+    },
+    "Day strip appears once Vago has counted today.": {
+      "comment": "Widget placeholder before any time was counted today."
+    },
+    "Mac": {
+      "comment": "Device name, the day-strip lane label."
+    },
+    "Neutral": {
+      "comment": "Control Center value label: neutral."
+    },
+    "New day. Open Vago to start counting.": {
+      "comment": "Widget caption on a new day before the app wrote data."
+    },
+    "Open Vago": {
+      "comment": "Widget caption before the app wrote any data."
+    },
+    "Switch Vago mode": {
+      "comment": "Title of the Control Center switch action."
+    },
+    "Switch the place in front between work and procrastination.": {
+      "comment": "Description of the Control Center control."
+    },
+    "Vago mode": {
+      "comment": "Display name of the Control Center control."
+    },
+    "Vago — today": {
+      "comment": "Display name of the desktop widget."
+    },
+    "Waste": {
+      "comment": "Control Center value label: procrastination."
+    },
+    "Work": {
+      "comment": "Control Center value label: on."
+    },
+    "Your productive share today, across your Mac and iPhone.": {
+      "comment": "Description of the desktop widget."
+    },
+    "as of %@": {
+      "comment": "Widget footer. The argument is the clock time of the last update."
+    },
+    "iPhone": {
+      "comment": "Device name, the day-strip lane label."
+    },
+    "iPhone minutes come from Screen Time reports and can lag a few minutes.": {
+      "comment": "Note under the iPhone lane of the day strip."
+    },
+    "no data for today": {
+      "comment": "Widget footer when there is no snapshot for today."
+    },
+    "no iPhone data": {
+      "comment": "Widget day-strip note when the iPhone has not reported."
+    },
+    "nothing": {
+      "comment": "Hour tooltip of the day strip when no time was counted in that hour."
+    }
+  },
+  "version": "1.0"
+}

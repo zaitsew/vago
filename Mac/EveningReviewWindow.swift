@@ -18,7 +18,7 @@ enum EveningReviewWindow {
     static func make(model: AppModel) -> HostedWindow {
         let items = items(model)
         let cards = model.eveningReviewStyle == .cards
-        return HostedWindow(title: "Evening review", size: NSSize(width: cards ? 420 : 560, height: cards ? 360 : 420),
+        return HostedWindow(title: String(localized: "Evening review", comment: "Title of the evening review window."), size: NSSize(width: cards ? 420 : 560, height: cards ? 360 : 420),
                             minSize: NSSize(width: 420, height: 360), resizable: false, autosaveName: "VagoEveningReview") { window in
             let close: @MainActor () -> Void = { [weak window] in window?.close() }
             if cards {
@@ -44,7 +44,7 @@ private struct ReviewEmpty: View {
 
 private func reasonText(_ item: CallItem) -> String {
     let text = Format.reason(item.reason)
-    return text.isEmpty ? "Vago could not tell." : text
+    return text.isEmpty ? String(localized: "Vago could not tell.", comment: "Shown on a review card when the AI judge gave no reason.") : text
 }
 
 // MARK: - Variant A: cards
@@ -62,7 +62,9 @@ struct ReviewCardsView: View {
             ReviewEmpty(close: close)
         } else if index >= items.count {
             VStack(spacing: 16) {
-                Text("Done — \(learned) \(learned == 1 ? "rule" : "rules") learned").font(.title2.weight(.semibold))
+                Text(verbatim: learned == 1
+                    ? String(localized: "Done — 1 rule learned", comment: "End of the evening review: one rule was learned.")
+                    : String(localized: "Done — \(learned) rules learned", comment: "End of the evening review. The argument is the number of rules learned.")).font(.title2.weight(.semibold))
                 Button("Close", action: close).keyboardShortcut(.defaultAction)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

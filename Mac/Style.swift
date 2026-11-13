@@ -61,24 +61,27 @@ enum Format {
     /// "45s" under a minute, then "12m", "1h 05m".
     static func duration(_ seconds: Int) -> String {
         let s = max(0, seconds)
-        if s < 60 { return "\(s)s" }
+        if s < 60 { return String(localized: "\(s)s", comment: "A duration under a minute, in seconds. Example: 45s.") }
         return minutes(s)
     }
 
     /// "0m", "12m", "3h 12m": whole minutes, rounded down.
     static func minutes(_ seconds: Int) -> String {
         let m = max(0, seconds) / 60
-        return m < 60 ? "\(m)m" : String(format: "%dh %02dm", m / 60, m % 60)
+        return m < 60
+            ? String(localized: "\(m)m", comment: "A duration in whole minutes. Example: 12m.")
+            : String(localized: "\(m / 60)h \(String(format: "%02d", m % 60))m", comment: "A duration of hours and minutes. First argument: hours; second: minutes with two digits. Example: 3h 12m.")
     }
 
     /// "3h 12m work · 40m neutral · 41m waste".
     static func split(_ share: ProductiveShare) -> String {
-        "\(minutes(share.productive)) work · \(minutes(share.neutral)) neutral · \(minutes(share.procrastination)) waste"
+        String(localized: "\(minutes(share.productive)) work · \(minutes(share.neutral)) neutral · \(minutes(share.procrastination)) waste",
+                       comment: "The day split under the share. Each argument is a duration such as 3h 12m.")
     }
 
     /// The hero caption: the split, or "12 min so far" while the share is hidden.
     static func caption(_ share: ProductiveShare) -> String {
-        share.percent == nil ? "\(share.active / 60) min so far" : split(share)
+        share.percent == nil ? String(localized: "\(share.active / 60) min so far", comment: "Caption of the share before 15 active minutes. The argument is the minutes counted so far.") : split(share)
     }
 
     /// The classifier prefixes guesses with "unsure: " or "held: "; the screen marks those itself.

@@ -23,10 +23,10 @@ extension AppModel {
         guardList.places.first { $0.matches(place.sample) }?.name ?? place.label
     }
 
-    /// Variant B of the toggle: leaving a place clears its toggle. Vago's own windows never count as leaving.
+    /// Leaving a place clears its toggle (the owner chose this on 13 November 2026). Vago's own windows never count as leaving.
     func leaveToggledPlace(for key: String) {
         defer { lastToggleKey = key }
-        guard variants.toggleResets, let last = lastToggleKey, last != key else { return }
+        guard let last = lastToggleKey, last != key else { return }
         toggles.removeValue(forKey: last)
         dirty = true
     }
@@ -88,7 +88,7 @@ extension AppModel {
         case .pause(let place, let overBudget):
             guardPanels.showPause(
                 place: place, overBudget: overBudget, usedMinutes: today.procrastination / 60,
-                budgetMinutes: guardList.budgetMinutes, variant: variants.pausePanel,
+                budgetMinutes: guardList.budgetMinutes,
                 close: { [weak self] in
                     self?.closeIfStillInFront(place)
                     self?.guardState.closed(place.id, now: Date())
@@ -107,7 +107,7 @@ extension AppModel {
             if blockShownFor != place.id {
                 blockShownFor = place.id
                 guardPanels.showBlock(
-                    place: place, until: until, variant: variants.blockPanel,
+                    place: place, until: until,
                     close: { [weak self] in
                         self?.closeIfStillInFront(place)
                         self?.guardState.closed(place.id, now: Date())

@@ -279,15 +279,16 @@ productive to work, procrastination and ambiguous to procrastination, and neutra
   - *Toggle*: `toggles[PlaceKey]` (host for a web page, bundle id for an app) is a `Bucket`. It wins
     over answers, rules and the judge (reason "your toggle", not a call in the Day window), and a
     place toggled to work is never paused, blocked or reported. Time counts by the toggle from the
-    second it is flipped. Variant A keeps it until flipped back; variant B clears it when the owner
-    leaves the place and at the day change. Vago's own windows never count as leaving a place:
+    second it is flipped. It clears when the owner leaves the place and at the day change (decided 13
+    November 2026). The popover's switch is an explicit capsule (`WorkSwitch`): green when on. Vago's own windows never count as leaving a place:
     `toggleTarget` keeps the last real place while the popover has the focus.
   - *Guard*: `GuardState.tick` with `isWork` = toggled to work and `usedSeconds` = today's waste.
-    `.pause` shows the pause panel (`GuardPanels`): 5 seconds, then **Close** (closes the tab through
+    `.pause` shows the pause card (`GuardPanels`): 5 seconds, then **Close** (closes the tab through
     Apple Events, Safari `close current tab of front window`, Chromium browsers `close active tab of
     front window`, or hides the app) and **Open for 5 min** (`grantPass`). `.block` closes the tab
     or hides the app at most once a second and shows the block panel once per entry; the deliberate
-    unlock (`GuardState.unlock`) is a 3-second hold (A) or typing the place's name (B).
+    unlock (`GuardState.unlock`) is a 3-second hold. Over budget, the ready pause card keeps the orange
+    ring and shows an exclamation mark, never a green check.
   - *Drift notice*: `DriftWatch.tick(Mode(bucket), guarded:)` per second, `idle()` when locked or
     idle. A true result posts a local notification (`NoticeCenter`): "Procrastination · Instagram"
     and "12 of 30 min today", a statement, never a question. Variant B adds a "Switch to work"
@@ -297,15 +298,16 @@ productive to work, procrastination and ambiguous to procrastination, and neutra
     each, the budget (30) and the work hours (Mon-Fri 09:00-18:00). Done sets `guardList.enabled`.
   - *State*: `state.json` gains `guardList`, `guardState`, `drift`, `toggles`, `variants` and
     `setupOffered`, all with decode defaults.
-- **Design variants**: each new screen has two designs (`DesignVariants`, `Mac/Design.swift`):
-  setup, pausePanel, blockPanel, modeIcon, toggle, notice. `defaults write com.zaitsew.vago.mac
+- **Design variants**: the screens still undecided have two designs (`DesignVariants`,
+  `Mac/Design.swift`): setup and notice. Decided on 13 November 2026: mode icon B (the pill), toggle B,
+  pause A (the card), block A (hold); their old keys in `state.json` are ignored. `defaults write com.zaitsew.vago.mac
   variant.<screen> b` is read at launch; Settings has a hidden "Design variants" section (hold
   Option when Settings first opens, or set the `showVariants` default). Debug builds take
-  `--render-variants <dir>`: it writes PNGs of every screen in both variants from sample data and
+  `--render-variants <dir>`: it writes PNGs of the screens from sample data and
   exits before any state is loaded. The drift banner PNGs are mocks (`-MOCK`).
 - **Menu bar**: an `NSStatusItem` whose attributed title is the mood emoji and the productive
-  share (`😄 92%`), tinted by `Mood`, after a mode badge: work green, procrastination red, neutral
-  grey (variant A a symbol in a circle, B a WORK / WASTE capsule). During focus it shows the stage
+  share (`😄 92%`), tinted by `Mood`, after the mode pill: a capsule tinted 18% with its word in the
+  full colour, WORK green, WASTE red, and a grey moon when neutral. During focus it shows the stage
   emoji and the minutes left. Left click opens the popover. Right click opens a menu whose first
   item is "Switch <place> to work" (or to procrastination), then Day, Settings…, Quit.
 - **Move breaks**: every counted second feeds `BreakCoach.active`. When `wantsPanel` is true
@@ -319,6 +321,12 @@ productive to work, procrastination and ambiguous to procrastination, and neutra
   with a device filter, the large `DayStrip` with hour tooltips, top waste and top work (Mac
   sessions), and Vago's calls with a Work / Neutral / Waste correction. Earlier days from the
   ledger show the share and the strip.
+- **Strings**: every user-facing string of the Mac app and the widget is in a String Catalog
+  (`Mac/Localizable.xcstrings`, `MacWidgets/Localizable.xcstrings`), English only for now, a comment
+  per key. SwiftUI literals localize by key; plain strings use `String(localized:comment:)`. Both
+  targets set `SWIFT_EMIT_LOC_STRINGS`; `xcodebuild` does not write the catalog, so new keys are merged
+  with `xcstringstool sync <catalog> --stringsdata <files>` from the build's `.stringsdata`. Not
+  catalogued: stored call reasons ("your toggle"), the AI judge's prompt, and VagoKit's move texts.
 - **Settings window** (`SettingsWindow`, same host): goals, launch at login, move reminders,
   guarded places and the guard switch, permissions, the AI judge state, iCloud, and Forget learned rules.
 - **DayStrip**: one lane per device, one stacked cell per hour (work, neutral, waste), from

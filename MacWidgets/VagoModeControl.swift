@@ -12,7 +12,7 @@ struct VagoModeControl: ControlWidget {
             ControlWidgetToggle(isOn: snapshot.isWork, action: SetModeIntent()) {
                 Label(snapshot.label, systemImage: Self.symbol(snapshot.mode))
             } valueLabel: { isOn in
-                Text(isOn ? "Work" : (snapshot.mode == .neutral ? "Neutral" : "Waste"))
+                Text(verbatim: isOn ? String(localized: "Work", comment: "Control Center value label: on.") : (snapshot.mode == .neutral ? String(localized: "Neutral", comment: "Control Center value label: neutral.") : String(localized: "Waste", comment: "Control Center value label: procrastination.")))
             }
             .tint(Self.color(snapshot.mode))
         }
