@@ -30,6 +30,9 @@ struct NoticePayload: Equatable, Sendable {
     var isOver: Bool { leftMinutes < 0 }
     /// 0...1 of the budget used.
     var fractionUsed: Double { budgetMinutes > 0 ? min(1, Double(usedMinutes) / Double(budgetMinutes)) : 1 }
+    /// What the bar and the ring fill: the part of the budget left, so the picture matches
+    /// the "min left" number. Over budget it is a full ring in the over-budget colour.
+    var fractionShown: Double { fractionUsed >= 1 ? 1 : max(0.02, 1 - fractionUsed) }
 
     static func make(variant: Variant, placeName: String, placeKey: String, usedMinutes: Int,
                      budgetMinutes: Int, day: DayKey) -> NoticePayload {
@@ -100,14 +103,14 @@ struct NoticeArt: View {
             Text(verbatim: numberText).font(.system(size: 48, weight: .heavy, design: .rounded)).foregroundStyle(color).minimumScaleFactor(0.6)
             Text(verbatim: captionText).font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary)
             Capsule().fill(Color.gray.opacity(0.2)).frame(width: 112, height: 10)
-                .overlay(alignment: .leading) { Capsule().fill(color).frame(width: 112 * max(0.04, payload.fractionUsed)) }
+                .overlay(alignment: .leading) { Capsule().fill(color).frame(width: 112 * max(0.04, payload.fractionShown)) }
         }
     }
 
     private func ring(_ color: Color) -> some View {
         ZStack {
             Circle().stroke(Color.gray.opacity(0.2), lineWidth: 14)
-            Circle().trim(from: 0, to: max(0.02, payload.fractionUsed))
+            Circle().trim(from: 0, to: payload.fractionShown)
                 .stroke(color, style: StrokeStyle(lineWidth: 14, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             VStack(spacing: 0) {
