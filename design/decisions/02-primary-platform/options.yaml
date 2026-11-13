@@ -1,0 +1,43 @@
+decision: 02-primary-platform
+question: Which device leads Vago — where is a feature designed, built and accepted first?
+journey: "the same workday: at the desk in Chrome, then the phone in breaks and in the evening; where the drift happens and where Vago acts"
+measure: "counted minutes per device (Mac 817 work and 146 waste over 8 days; iPhone 0 on every day) and waste minutes per day (Mac median 15, limit 30; iPhone unknown)"
+options:
+  - id: mac-leads
+    recommended: true
+    title: "The Mac leads: the guard, the toggle and the notice are designed and accepted on the Mac; the iPhone follows in parity trains"
+    summary: "Vago is built for the desk, where every counted minute so far was spent; the iPhone shows the day and keeps its shield."
+    why: "All counted time is Mac time, the decision 01 loop exists only on the Mac, and only the Mac can tell work from waste inside Chrome (70% of active time)."
+    user_does: "At the desk: the menu-bar pill and toggle, the 5-second pause and the block on his three places, the drift notice. On the phone: glances at the day (widget, Today tab) and meets the existing Screen Time shield on the apps he picked there."
+    removes_or_moves: "teyla.toml primary changes from ios to macos, with this pick as the dated reason. New iPhone features wait for a parity train; the iPhone keeps everything it has now."
+    he_pays: "Phone scrolling is guarded only by the older shield, and its minutes stay uncounted until the iPhone counters work. A green Mac day can hide a phone evening."
+    he_gets: "The loop he already chose works tomorrow on the device where his day is; every feature is accepted where it can be measured."
+    evidence:
+      - "His data: every counted minute is a Mac minute; the iPhone wrote 5 day rows, all zero (observation)"
+      - "His data: Chrome is 70% of active time, so the lever must act per site; only the Mac sees URLs (observation)"
+      - "Apple: Screen Time APIs are iOS only; the iPhone sees threshold events, no titles or URLs (guideline, developer.apple.com)"
+      - "Grok and Codex second opinions both pick the Mac; Codex warns friction may move scrolling to the phone (observation)"
+    cost: "None to build: the loop is merged (#28–#32). Risk: displacement to the phone; the 1-minute test below measures it."
+    serves:
+      - "count time spent on procrastination and work across my devices"
+      - "not to spend more than 30 min on procrastination a day"
+      - "иконку в controls menu"
+    conflicts:
+      - "\"across my devices\": the phone's waste stays unmeasured until a parity train makes the iPhone count."
+  - id: iphone-leads
+    title: "The iPhone leads (POLICY default): the guard is rebuilt around Screen Time shields first; the Mac follows"
+    summary: "Vago is built for the phone, where the OS enforces a shield the user cannot click past without a pass."
+    why: "The only OS-enforced lever on either device is the iPhone shield, and phone scrolling may be where the 30 minutes go."
+    user_does: "On the phone: picks apps and sites in Apple's picker, meets a shield with a pass (work 15 min / scroll 5 min), sees thresholds counted. At the desk: the Mac tracks and shows the day; its pause and toggle wait for a parity train."
+    removes_or_moves: "The Mac loop from #28–#32 stays as built but gets no new features until a parity train. The next sprint rebuilds the guard, the toggle and the notice on the iPhone."
+    he_pays: "No per-site split inside an app; minutes only as thresholds; the iPhone has never counted a minute, so the first weeks start from zero. Chrome waste on the Mac keeps today's lever."
+    he_gets: "The strongest lever (an OS shield) on the device that is always with him, if that is where the waste is."
+    evidence:
+      - "Apple: ManagedSettings shields are OS-enforced on chosen apps and web domains (guideline, developer.apple.com)"
+      - "one sec and Opal lead on the iPhone because that is where the OS gives them friction at opening (observation)"
+      - "His data: iPhone waste is unknown; his iPhone Screen Time totals were not read (observation)"
+    cost: "Build: the decision 01 loop again on the iPhone (shield per place, pass, toggle, notice); the iPhone counters first need to record a day. Risk: building for a leak that may not exist."
+    serves:
+      - "not to spend more than 30 min on procrastination a day"
+    conflicts:
+      - "Decision 01 was drawn and built for the Mac; leading on the iPhone rebuilds it."
