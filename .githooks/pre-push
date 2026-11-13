@@ -76,6 +76,62 @@ exec < "$_tlg_in"
 rm -f "$_tlg_in"
 unset _tlg_home _tlg_rc _tlg_remote _tlg_in _tlg_want _tlg_got _tlg_l _tlg_lsha _tlg_r _tlg_rsha _tlg_range _tlg_one _tlg_legacy
 # <<< teyla leak gate
+
+# >>> docs-only push: no build
+# A push whose commits change only documents cannot break the build, so it skips the check below and takes no
+# build slot on the shared Mac. Documents are Markdown files at the top level (README.md, CHANGELOG.md) and
+# Markdown or pictures under docs/. The leak gate above has already run. Everything else runs the full check:
+# any other path, a rename, a tag, a merge that brings or drops code, a remote tip this clone has not fetched.
+# PREPUSH_DOCS_SKIP=0 turns the skip off for one push.
+_do_refs=$(cat)
+_do_skip=1
+_do_seen=0
+[ "${PREPUSH_DOCS_SKIP:-1}" = 0 ] && _do_skip=0
+while read -r _do_l _do_lsha _do_r _do_rsha; do
+  [ "$_do_skip" = 1 ] || break
+  case "${_do_lsha:-}" in *[!0]*) ;; *) continue ;; esac
+  case "$_do_l $_do_r" in refs/tags/*|*" refs/tags/"*) _do_skip=0; break ;; esac
+  _do_files=
+  _do_known=0
+  case "${_do_rsha:-}" in *[!0]*)
+    # A remote tip this clone does not have (not fetched yet): what the push replaces is unknown, so check.
+    git cat-file -e "$_do_rsha^{commit}" 2>/dev/null || { _do_skip=0; break; }
+    # The branch exists on the remote: compare the two trees. That is exactly what the push changes there, so a
+    # merge that drops code (`git merge -s ours`) shows the dropped files. --no-renames lists both names.
+    _do_files=$(git -c core.quotePath=true diff --no-renames --name-only "$_do_rsha" "$_do_lsha" 2>/dev/null) || { _do_skip=0; break; }
+    _do_known=1 ;;
+  esac
+  if [ "$_do_known" = 0 ]; then
+    # A new branch: list the commits no branch of this remote has. A merge among them runs the full check.
+    _do_range="$_do_lsha --not --remotes=${1:-origin}"
+    _do_merges=$(git rev-list --count --merges $_do_range 2>/dev/null) || { _do_skip=0; break; }
+    [ "$_do_merges" = 0 ] || { _do_skip=0; break; }
+    _do_files=$(git -c core.quotePath=true log --no-renames --name-only --pretty=format: $_do_range 2>/dev/null) || { _do_skip=0; break; }
+  fi
+  # Here-documents, not pipes: under `set -o pipefail` a writer cut off by an early grep exit would read as "no match".
+  _do_files=$(sed '/^$/d' <<_DO_EOF
+$_do_files
+_DO_EOF
+  )
+  if [ -z "$_do_files" ]; then _do_skip=0; break; fi
+  if grep -qvE '^[^/]+\.md$|^docs/.+\.(md|png|jpe?g|gif|svg|webp)$' <<_DO_EOF
+$_do_files
+_DO_EOF
+  then _do_skip=0; break; fi
+  _do_seen=1
+done <<_DO_EOF
+$_do_refs
+_DO_EOF
+if [ "$_do_skip" = 1 ] && [ "$_do_seen" = 1 ]; then
+  echo "pre-push: only documents changed; the build check is skipped (PREPUSH_DOCS_SKIP=0 runs it)" >&2
+  exit 0
+fi
+exec <<_DO_EOF
+$_do_refs
+_DO_EOF
+unset _do_refs _do_skip _do_seen _do_l _do_lsha _do_r _do_rsha _do_range _do_known _do_merges _do_files
+# <<< docs-only push
+
 # The push gate: ./check.sh (package tests + both app builds), which check.sh's
 # own header already asks for "before you push". Nothing on GitHub runs it
 # automatically any more (POLICY §10, 2026-09-30).
