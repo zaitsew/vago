@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="169" viewBox="0 0 880 169" role="img" aria-label="How it works. 1. Count. Mac and iPhone log work and waste. 2. Judge. On-device AI sorts each place. 3. Correct. One tap turns a call into a rule. 4. Share. One number a day, on every device.">
+<style>text{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',Inter,'Segoe UI',Helvetica,Arial,sans-serif;fill:#14161D}.m{fill:#585E6D}.cap{font-size:11px;letter-spacing:.06em}.b{font-weight:600}</style>
+<rect x="0.5" y="0.5" width="879" height="168" rx="12" fill="#FFFFFF" stroke="#DCDEE5"/>
+<line x1="90.0" x2="230.0" y1="52" y2="52" stroke="#DCDEE5" stroke-width="2" stroke-linecap="round"/>
+<circle cx="60.0" cy="52" r="20" fill="#5859CC"/>
+<text class="b" x="60.0" y="58" font-size="17" text-anchor="middle" style="fill:#FFFFFF">1</text>
+<text class="b" x="40.0" y="98" font-size="15.5">Count</text>
+<text class="m" x="40.0" y="120" font-size="13.5">Mac and iPhone log work</text>
+<text class="m" x="40.0" y="139" font-size="13.5">and waste.</text>
+<line x1="290.0" x2="430.0" y1="52" y2="52" stroke="#DCDEE5" stroke-width="2" stroke-linecap="round"/>
+<circle cx="260.0" cy="52" r="20" fill="#5859CC"/>
+<text class="b" x="260.0" y="58" font-size="17" text-anchor="middle" style="fill:#FFFFFF">2</text>
+<text class="b" x="240.0" y="98" font-size="15.5">Judge</text>
+<text class="m" x="240.0" y="120" font-size="13.5">On-device AI sorts each</text>
+<text class="m" x="240.0" y="139" font-size="13.5">place.</text>
+<line x1="490.0" x2="630.0" y1="52" y2="52" stroke="#DCDEE5" stroke-width="2" stroke-linecap="round"/>
+<circle cx="460.0" cy="52" r="20" fill="#5859CC"/>
+<text class="b" x="460.0" y="58" font-size="17" text-anchor="middle" style="fill:#FFFFFF">3</text>
+<text class="b" x="440.0" y="98" font-size="15.5">Correct</text>
+<text class="m" x="440.0" y="120" font-size="13.5">One tap turns a call into a</text>
+<text class="m" x="440.0" y="139" font-size="13.5">rule.</text>
+<circle cx="660.0" cy="52" r="20" fill="#5859CC"/>
+<text class="b" x="660.0" y="58" font-size="17" text-anchor="middle" style="fill:#FFFFFF">4</text>
+<text class="b" x="640.0" y="98" font-size="15.5">Share</text>
+<text class="m" x="640.0" y="120" font-size="13.5">One number a day, on every</text>
+<text class="m" x="640.0" y="139" font-size="13.5">device.</text>
+</svg>

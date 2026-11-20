@@ -1,0 +1,25 @@
+{
+  "name": "Vago",
+  "tagline": "One number a day: how much of your screen time was work.",
+  "summary": "An AI-native focus app that counts work and scrolling across your iPhone and Mac.",
+  "accent": "#5859CC",
+  "accent_dark": "#8080FF",
+  "status": "building",
+  "kind": "app",
+  "platforms": ["iOS", "macOS"],
+  "pills": ["Open source", "On-device AI"],
+  "highlights": [
+    {"label": "SHARE", "title": "Productive share, not screen time", "text": "100% minus procrastination, in the Mac menu bar and on Today."},
+    {"label": "AI", "title": "On-device work or waste", "text": "The Mac judges titles and URLs against your goals. Nothing leaves it."},
+    {"label": "CORRECT", "title": "One tap fixes a call", "text": "A correction becomes a rule; Vago holds back when you overrule it."},
+    {"label": "LIMIT", "title": "A daily limit that shrinks", "text": "The waste limit walks down to 30 minutes."},
+    {"label": "GUARD", "title": "Pause cards and shields", "text": "Mac guards up to three places; iPhone asks \"Work or scroll?\"."},
+    {"label": "FOCUS", "title": "Grow a tree, keep the day", "text": "25 or 50 minute sessions shield distracting apps."}
+  ],
+  "steps": [
+    {"title": "Count", "text": "Mac and iPhone log work and waste."},
+    {"title": "Judge", "text": "On-device AI sorts each place."},
+    {"title": "Correct", "text": "One tap turns a call into a rule."},
+    {"title": "Share", "text": "One number a day, on every device."}
+  ]
+}
