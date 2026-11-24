@@ -17,7 +17,9 @@ app is on internal TestFlight and is not on sale.
 - **Smart buckets.** Productive, neutral, procrastination, ambiguous. Instagram can be work.
 - **Silent by day.** Vago never asks during the day; an unsure place counts as neutral.
 - **Day window (Mac).** Lists Vago's calls with the AI's reason. The popover's **Wrong?** and a work switch correct too.
-- **Guard notice (Mac).** Says when 60 seconds of procrastination follow work.
+- **Work toggle (Mac).** One tap flips the place in front between work and procrastination. Leaving the place clears it.
+- **Place guard (Mac).** Name up to 3 places. Each one gets a 5-second pause card or a block, with a daily budget (30 minutes by default) and work hours (9:00 to 18:00 on weekdays by default).
+- **Drift notice (Mac).** Says when 60 seconds of procrastination follow work. It shows the budget left and a **Switch to work** action.
 - **Intent check (iPhone).** Ambiguous apps ask "Work or scroll?" before they open.
 - **Focus trees.** 🌱 → 🌳 when a session ends; a distraction wilts it 🥀.
 - **Move breaks (Mac).** After 90 minutes without a break: one 2-minute desk exercise with exact reps. It waits out focus and calls, and asks at most twice.
@@ -56,6 +58,6 @@ scripts/install-mcp.sh                # optional: vago-mcp for Claude Code or Co
 
 Apache 2.0.
 
-<sub>Built by <a href="https://github.com/zaitsew">zaitsew</a> with a fleet of AI agents.</sub>
+<sub>Built by <a href="https://github.com/zaitsew">zaitsew</a> with a fleet of AI agents. Focus has no save point. Vago plants a tree at the end of each session instead.</sub>
 
-<!-- teyla:reviewed 2026-11-13 -->
+<!-- teyla:reviewed 2026-11-23 -->
