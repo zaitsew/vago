@@ -58,6 +58,6 @@ scripts/install-mcp.sh                # optional: vago-mcp for Claude Code or Co
 
 Apache 2.0.
 
-<sub>Built by <a href="https://github.com/zaitsew">zaitsew</a> with a fleet of AI agents. Focus has no save point. Vago plants a tree at the end of each session instead.</sub>
+<sub>Built by <a href="https://github.com/zaitsew">zaitsew</a> with a fleet of AI agents[.](#readme "Vago's call on the last minute: procrastination, 0.94. Hunting for a hare in a README footer is not work. One tap corrects it.")</sub>
 
 <!-- teyla:reviewed 2026-11-23 -->
